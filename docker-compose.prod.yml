@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: mood_tracker_mongo_prod
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_DATABASE}
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_prod_data:/data/db
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    command: [
+      '--auth',
+      '--bind_ip_all',
+      '--wiredTigerCacheSizeGB=1.5'
+    ]
+    networks:
+      - mood_tracker_prod_network
+
+volumes:
+  mongodb_prod_data:
+    name: mood_tracker_mongo_prod_data
+
+networks:
+  mood_tracker_prod_network:
+    name: mood_tracker_prod_network
