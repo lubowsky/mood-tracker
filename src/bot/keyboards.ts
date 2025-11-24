@@ -2,14 +2,19 @@ import { Keyboard } from 'grammy';
 
 export const mainMenu = new Keyboard()
   .text('📝 Добавить запись')
-  .text('📊 Статистика')
-  .row()
   .text('📋 Последние записи')
+  .row()
+  // .text('🌅 Утро')
+  // .text('☀️ День')
+  // .text('🌆 Вечер')
+  // .row()
+  .text('📊 Статистика')
   .text('⏰ Настройки')
   .row()
   .text('ℹ️ Помощь')
-  .row()
   .text('📚 Справочник эмоций')
+  .row()
+  .text('💾 Экспорт записей')
   .resized();
 
 export const timeOfDayKeyboard = new Keyboard()

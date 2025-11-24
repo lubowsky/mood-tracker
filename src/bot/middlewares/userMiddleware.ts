@@ -1,13 +1,29 @@
+// src\bot\middlewares\userMiddleware.ts
 import { Context } from 'grammy';
+import type { SessionFlavor } from "grammy"
+import type { ConversationFlavor } from "@grammyjs/conversations"
 import { getCollection } from '../../models/database';
 import { User, UserCollection, defaultUserSettings } from '../../models/User';
 
-export interface MyContext extends Context {
-  user?: User;
+export interface MySession {
+  isAddingEntry?: boolean;
+  awaitingHomeName?: boolean;
 }
+
+export type MyContext =
+  & Context
+  & SessionFlavor<MySession>
+  & ConversationFlavor<Context>
+  & {
+      user?: User
+    }
 
 export async function userMiddleware(ctx: MyContext, next: () => Promise<void>) {
   if (!ctx.from) return next();
+
+  if (!ctx.session) {
+    ctx.session = {};
+  }
 
   const usersCollection = await getCollection(UserCollection);
   

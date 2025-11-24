@@ -7,6 +7,7 @@ export interface UserSettings {
   notificationsEnabled: boolean;
   daytimeNotifications: boolean;
   lastDaytimeNotification?: Date;
+  homeName?: string;
 }
 
 export interface User {

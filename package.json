@@ -19,11 +19,15 @@
     "db:restore": "docker-compose exec -T mongodb mongorestore --uri=\"mongodb://admin:password123@localhost:27017/mood_tracker?authSource=admin\" --archive --gzip <"
   },
   "dependencies": {
+    "@grammyjs/conversations": "^2.1.0",
     "dotenv": "^16.3.1",
     "grammy": "^1.20.3",
     "moment": "^2.29.4",
     "moment-timezone": "^0.6.0",
-    "mongodb": "^5.8.1"
+    "mongodb": "^5.8.1",
+    "node-cron": "^4.2.1",
+    "pdfkit": "^0.17.2",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@types/mongodb": "^4.0.7",

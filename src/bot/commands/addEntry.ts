@@ -383,6 +383,7 @@ function createQuickOptionsKeyboard(): InlineKeyboard {
 }
 
 composer.hears('📝 Добавить запись', async (ctx) => {
+  console.log('нажата кнопка Добавить запись пользователем', ctx.user?.firstName, ctx.user?.telegramId)
   const session: EntrySession = {
     step: 'physical_symptoms',
     data: {
@@ -396,6 +397,7 @@ composer.hears('📝 Добавить запись', async (ctx) => {
   };
   
   sessions.set(ctx.from!.id, session);
+  ctx.session.isAddingEntry = true;
   
   await ctx.reply(`🏥 *Физические симптомы*
 
@@ -484,6 +486,7 @@ async function saveEntryAndFinish(ctx: any, session: EntrySession, userId: numbe
     const entryId = await EntryService.createManualEntry(moodEntryData);
     
     sessions.delete(userId);
+    ctx.session.isAddingEntry = false;
     
     // ОБНОВЛЕННАЯ СВОДКА
     let summary = `✅ *Запись сохранена!*\n\n`;
@@ -516,6 +519,7 @@ async function saveEntryAndFinish(ctx: any, session: EntrySession, userId: numbe
       reply_markup: mainMenu
     });
     sessions.delete(userId);
+    ctx.session.isAddingEntry = false;
   }
 }
 
@@ -727,15 +731,27 @@ composer.callbackQuery(/^quick_(.+)$/, async (ctx) => {
 
 // ОБРАБОТЧИК СООБЩЕНИЙ
 composer.on('message:text', async (ctx) => {
+  if (ctx.message.text?.endsWith("_internal")) {
+    return
+  }
+  console.log('🟢 message:text addEntry');
   const userId = ctx.from!.id;
   const session = sessions.get(userId);
   
-  if (!session) return;
+  // if (!session) return;
+
+  if (!session || !ctx.session.isAddingEntry) {
+    return; // Пропускаем все сообщения не связанные с добавлением записи
+  }
+  
+  console.log('🟢 message:text addEntry - user is in adding process Пользователь нажал добавить запись и добавляет её');
   
   const text = ctx.message.text;
   
   if (text === '❌ Отмена') {
     sessions.delete(userId);
+
+    ctx.session.isAddingEntry = false;
     await ctx.reply('Запись отменена', { reply_markup: mainMenu });
     return;
   }
@@ -829,6 +845,7 @@ composer.on('message:text', async (ctx) => {
     }
   } catch (error) {
     console.error('Error in addEntry flow:', error);
+    ctx.session.isAddingEntry = false;
     await ctx.reply('Произошла ошибка. Попробуйте снова.', { reply_markup: mainMenu });
     sessions.delete(userId);
   }

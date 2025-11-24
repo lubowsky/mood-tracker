@@ -1,3 +1,4 @@
+// src\bot\commands\getStats.ts
 import { Composer } from 'grammy';
 import { MyContext } from '../middlewares/userMiddleware';
 import { AnalyticsService } from '../../services/analyticsService';
@@ -6,19 +7,19 @@ import { mainMenu } from '../keyboards';
 const composer = new Composer<MyContext>();
 
 // Обработчик для кнопки "📊 Статистика" из главного меню
-composer.hears('📊 Статистика', async (ctx) => {
-  console.log('Statistics button pressed by user:', ctx.from?.id);
+// composer.hears('📊 Статистика', async (ctx) => {
+//   console.log('Statistics button pressed by user:', ctx.from?.id);
   
-  await ctx.reply('Выбери период для анализа:', {
-    reply_markup: {
-      keyboard: [
-        [{ text: '📈 За 7 дней' }, { text: '📊 За 30 дней' }],
-        [{ text: '🔍 Корреляции' }, { text: '↩️ Назад' }]
-      ],
-      resize_keyboard: true
-    }
-  });
-});
+//   await ctx.reply('Выбери период для анализа:', {
+//     reply_markup: {
+//       keyboard: [
+//         [{ text: '📈 За 7 дней' }, { text: '📊 За 30 дней' }],
+//         [{ text: '🔍 Корреляции' }, { text: '↩️ Назад' }]
+//       ],
+//       resize_keyboard: true
+//     }
+//   });
+// });
 
 // Обработчики для статистики (добавляем логирование)
 composer.hears('📈 За 7 дней', async (ctx) => {

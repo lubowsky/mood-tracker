@@ -27,3 +27,20 @@ export const getDateRange = (days: number) => {
   const start = moment().subtract(days, 'days');
   return { start: start.toDate(), end: end.toDate() };
 };
+
+export function formatTime(date: Date): string {
+  return new Date(date).toLocaleTimeString('ru-RU', {
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
+
+export function formatDateTimeFull(date: Date): string {
+  return new Date(date).toLocaleDateString('ru-RU', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
