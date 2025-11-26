@@ -1,3 +1,4 @@
+// src\bot\commands\mainMenu.ts
 import { Composer, InlineKeyboard, InputFile } from 'grammy';
 import { MyContext } from '../middlewares/userMiddleware';
 import { mainMenu as mainMenuKeyboard } from '../keyboards';

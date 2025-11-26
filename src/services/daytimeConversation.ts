@@ -4,6 +4,7 @@ import type { MyContext } from "../bot/middlewares/userMiddleware"
 import { getCollection } from "../models/database"
 import { UserCollection } from "../models/User"
 import moment from "moment-timezone"
+import { mainMenu } from '../bot/keyboards';
 
 const gentlePhrases = [
   "💫 Привет! Как твое состояние в этот момент?",
@@ -55,6 +56,12 @@ export async function daytimeConversation(
 
   const data = action.callbackQuery.data
 
+  if (data === "go_main") {
+    await ctx.reply("🏠 Главное меню:", { reply_markup: mainMenu })
+    return
+  }
+
+
   if (data === "daytime_ok" || data === "daytime_normal") {
     const addedString =
       "\n Что помогает тебе чувствовать себя так?\n\n Если захочешь поделиться чем-то подробнее — загляни в «📝 Добавить запись» в главном меню. Хорошего тебе продолжения дня 💛"
@@ -79,6 +86,8 @@ export async function daytimeConversation(
     await action.editMessageText(replyText)
     await saveQuickResponse(userId, type === "daytime_ok" ? "positive" : "neutral")
 
+    await ctx.reply("🏠 Главное меню:", { reply_markup: mainMenu })
+
     return
   }
 
@@ -91,7 +100,8 @@ export async function daytimeConversation(
             [
               { text: "Да", callback_data: "hard_yes" },
               { text: "Нет", callback_data: "hard_no" }
-            ]
+            ],
+            [{ text: "🏠 Главное меню", callback_data: "go_main" }]
           ]
         }
       }
@@ -100,6 +110,11 @@ export async function daytimeConversation(
     const next = await conversation.waitFor("callback_query:data")
     await next.answerCallbackQuery()
     const choice = next.callbackQuery.data
+
+    if (choice === "go_main") {
+      await ctx.reply("🏠 Главное меню:", { reply_markup: mainMenu })
+      return
+    }
 
     if (choice === "hard_yes") {
       await next.editMessageText("Хорошо 💛\n\nРасскажи, что происходит:")
@@ -110,14 +125,15 @@ export async function daytimeConversation(
       await saveDetailedDescription(userId, text)
 
       await msg.reply(
-        "Сочувствую тебе. Знай, что ты можешь: 💛" + 
-        "\n - позвонить или написать другу, \n -или воспользоваться кнопкой «📝 Добавить запись» в главном меню, чтобы потом обсудить это с психологом или прямо сейчас: ",
+        "Сочувствую тебе…\n" +
+  "Пожалуйста, не оставайся один в своих переживаниях.\n\n" +
+  "Можно позвонить или написать другу — переживать вдвоём действительно легче.\n" +
+  "Ты также можешь воспользоваться кнопкой «📝 Добавить запись» в главном меню, а потом обсудить это с психологом.",
         {
           reply_markup: {
             inline_keyboard: [
               [{ text: "Записаться к психологу", callback_data: "hard_help_psy" }],
-              // [{ text: "Позвонить или написать другу", callback_data: "hard_help_friend" }],
-              // [{ text: "Добавить запись, чтобы обсудить потом", callback_data: "hard_add_entry" }]
+              [{ text: "🏠 Главное меню", callback_data: "go_main" }]
             ]
           }
         }
@@ -125,27 +141,42 @@ export async function daytimeConversation(
 
       const final = await conversation.waitFor("callback_query:data")
       await final.answerCallbackQuery()
-      return handleHardFinal(final, ctx)
+
+      if (final.callbackQuery.data === "go_main") {
+        await ctx.reply("🏠 Главное меню:", { reply_markup: mainMenu })
+        return
+      }
+
+      await handleHardFinal(final, ctx)
+
+      await ctx.reply("🏠 Главное меню:", { reply_markup: mainMenu })
+
+      return
     }
 
     if (choice === "hard_no") {
       await next.editMessageText(
-        "Сочувствую тебе. \n\nЗнай, что ты можешь: 💛" + 
-        "\n - позвонить или написать другу, \n -или воспользоваться кнопкой «📝 Добавить запись» в главном меню, чтобы потом обсудить это с психологом или прямо сейчас: ",
+        "Сочувствую тебе…\n" +
+  "Пожалуйста, не оставайся один в своих переживаниях.\n\n" +
+  "Можно позвонить или написать другу — переживать вдвоём действительно легче.\n" +
+  "Ты также можешь воспользоваться кнопкой «📝 Добавить запись» в главном меню, а потом обсудить это с психологом.",
         {
           reply_markup: {
             inline_keyboard: [
               [{ text: "Записаться к психологу", callback_data: "hard_help_psy" }],
-              // [{ text: "Позвонить или написать другу", callback_data: "hard_help_friend" }],
-              // [{ text: "Добавить запись, чтобы обсудить потом", callback_data: "hard_add_entry" }]
-            ]
+              [{ text: "🏠 Главное меню", callback_data: "go_main" }]
+             ]
           }
         }
       )
 
       const final = await conversation.waitFor("callback_query:data")
       await final.answerCallbackQuery()
-      return handleHardFinal(final, ctx)
+      await handleHardFinal(final, ctx)
+
+      await ctx.reply("🏠 Главное меню:", { reply_markup: mainMenu })
+
+      return
     }
   }
 
@@ -156,7 +187,14 @@ export async function daytimeConversation(
       await query.editMessageText(
         "Вот ссылка, по которой ты можешь записаться к психологу:\n\n" +
         "https://t.me/psu_shatunova\n\n" +
-        "Ты не один 💛"
+        "Ты не один 💛",
+        {
+          reply_markup: {
+            inline_keyboard: [
+              [{ text: "🏠 Главное меню", callback_data: "go_main" }]
+            ]
+          }
+        }
       )
     }
 
@@ -187,6 +225,9 @@ export async function daytimeConversation(
 
     await saveDetailedDescription(userId, text)
     await msg.reply(`💫 Спасибо, что поделился 🌸 Твои мысли сохранены.`)
+    
+    await ctx.reply("🏠 Главное меню:", { reply_markup: mainMenu })
+
     return
   }
 
@@ -203,11 +244,14 @@ export async function daytimeConversation(
       `Хорошо, я не буду беспокоить тебя до завтра 🌙\n\n` +
       `Если захочешь записать что-то — используй кнопку "📝 Добавить запись"`
     )
+    await ctx.reply("🏠 Главное меню:", { reply_markup: mainMenu })
 
     return
   }
 
   await action.editMessageText("Спасибо! Если захочешь — используй «📝 Добавить запись»")
+
+  await ctx.reply("🏠 Главное меню:", { reply_markup: mainMenu })
 }
 
 async function saveQuickResponse(userTelegramId: number, moodType: "positive" | "neutral" | "negative") {

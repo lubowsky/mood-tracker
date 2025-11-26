@@ -13,9 +13,9 @@ export function initCron(bot: Bot<MyContext>) {
     const users = await getAllUsers()
 
     // 🔴 ТЕСТОВЫЙ РЕЖИМ - запускаем тестовый диалог каждую минуту для пользователя
-  //   const TEST_USER_ID = process.env.TEST_USER_ID
-      // ? Number(process.env.TEST_USER_ID)
-      // : null;
+    // const TEST_USER_ID = process.env.TEST_USER_ID1
+    //   ? Number(process.env.TEST_USER_ID1)
+    //   : null;
     // const testUser = users.find(user => user.telegramId === TEST_USER_ID)
     // if (testUser) {
     //   try {

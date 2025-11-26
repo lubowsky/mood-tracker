@@ -1,3 +1,4 @@
+// src\bot\keyboards.ts
 import { Keyboard } from 'grammy';
 
 export const mainMenu = new Keyboard()

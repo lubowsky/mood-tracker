@@ -2,6 +2,19 @@
 import { Bot, session } from "grammy"
 import { conversations, createConversation } from "@grammyjs/conversations"
 
+import { config } from "dotenv"
+import path from "path"
+
+const envFile =
+  process.env.NODE_ENV === "production"
+    ? ".env.production"
+    : ".env.dev";
+
+config({ path: path.resolve(process.cwd(), envFile) });
+
+console.log(`⚙️ Loaded env file: ${envFile}`);
+console.log(`🌍 NODE_ENV: ${process.env.NODE_ENV}`);
+
 import start from './bot/commands/start';
 import mainMenu from './bot/commands/mainMenu';
 import addEntry from './bot/commands/addEntry';
