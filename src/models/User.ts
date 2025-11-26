@@ -1,3 +1,4 @@
+// src\models\User.ts
 import { ObjectId } from 'mongodb';
 
 export interface UserSettings {
@@ -22,10 +23,17 @@ export interface User {
 
 export const UserCollection = 'users';
 
-export const defaultUserSettings: UserSettings = {
+export const defaultUserSettings: Omit<UserSettings, 'homeName'> = {
   timezone: 'Europe/Moscow',
   morningNotification: '09:00',
   eveningNotification: '21:00',
   notificationsEnabled: true,
-  daytimeNotifications: true
+  daytimeNotifications: true,
 };
+
+export function createUserSettings(firstName: string): UserSettings {
+  return {
+    ...defaultUserSettings,
+    homeName: firstName || 'Друг'
+  };
+}

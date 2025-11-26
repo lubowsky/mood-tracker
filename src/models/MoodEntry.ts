@@ -1,3 +1,4 @@
+// src\models\MoodEntry.ts
 import { ObjectId } from 'mongodb';
 
 export interface PhysicalSymptom {

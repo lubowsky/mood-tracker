@@ -2,7 +2,6 @@
 import type { Conversation } from "@grammyjs/conversations"
 import type { MyContext } from "../bot/middlewares/userMiddleware"
 import { getCollection } from "../models/database"
-import { MoodEntryCollection } from "../models/MoodEntry"
 import { UserCollection } from "../models/User"
 import moment from "moment-timezone"
 
@@ -20,16 +19,6 @@ function random<T>(arr: readonly T[]): T {
   return arr[Math.floor(Math.random() * arr.length)]
 }
 
-/**
- * Conversation для дневного уведомления.
- *
- * Вход: conversation и ctx — вызывается либо по кнопке/команде, либо cron'ом через внутренний апдейт.
- * Поведение максимально совпадает со старым сервисом:
- * - показывает клавиатуру с быстрыми ответами и ссылками
- * - обрабатывает quick responses (редактирует сообщение и сохраняет)
- * - при выборе "📝 Подробнее" просит текст и сохраняет
- * - при выборе "🔕 Не спрашивать сегодня" ставит паузу до завтра
- */
 export async function daytimeConversation(
   conversation: Conversation<MyContext, MyContext>,
   ctx: MyContext
@@ -38,7 +27,6 @@ export async function daytimeConversation(
   const users = getCollection(UserCollection)
   const user = await users.findOne({ telegramId: userId })
 
-  // Бережная фраза (рандом)
   const phrase = random(gentlePhrases)
 
   const message = `${phrase}\n\n*Можешь коротко описать:*\n• Эмоцию или чувство\n• Физическое ощущение\n• Или просто сказать "всё хорошо" 💛`
@@ -57,107 +45,170 @@ export async function daytimeConversation(
     ]
   }
 
-  // Отправляем/редактируем сообщение — если мы вызваны через callback editing may be required.
-  // Просто отправим новое сообщение (conversation обычно запускается через internal command)
   await ctx.reply(message, {
     parse_mode: "Markdown",
     reply_markup: keyboard
   })
 
-  // ждём выбора пользователя (callback_query)
   const action = await conversation.waitFor("callback_query:data")
   await action.answerCallbackQuery()
 
   const data = action.callbackQuery.data
 
-  // --- быстрые ответы ---
-  if (data === "daytime_ok" || data === "daytime_normal" || data === "daytime_hard") {
+  if (data === "daytime_ok" || data === "daytime_normal") {
+    const addedString =
+      "\n Что помогает тебе чувствовать себя так?\n\n Если захочешь поделиться чем-то подробнее — загляни в «📝 Добавить запись» в главном меню. Хорошего тебе продолжения дня 💛"
+
     const responses = {
       daytime_ok: [
-        "Здорово слышать 🌞 Если захочешь поделиться чем-то подробнее — загляни в «Добавить запись» в главном меню. Хорошего тебе продолжения дня 💛",
-        "Пусть это ощущение мягко сопровождает тебя дальше ✨ Если захочешь углубиться — кнопка «Добавить запись» всегда под рукой."
-        ],
-        daytime_normal: [
-        "Поняла тебя 🌿 Если захочешь подробнее описать своё состояние — просто воспользуйся кнопкой «Добавить запись». Береги себя 💛",
-        "Спасибо, что ответил 🌼 Если появится желание рассказать больше — «Добавить запись» всегда доступна. Тепла тебе 🌱"
-        ],
-        daytime_hard: [
-        "Спасибо, что поделился 💖 Если захочешь чуть глубже разобраться в ощущениях — кнопка «Добавить запись» всегда доступна. Поддерживаю тебя 🌷",
-        "Понимаю 🌿 Если будет желание описать подробнее — можешь сделать это через «Добавить запись». Пожалуйста, будь к себе мягче 💫"
-        ]
+        "Здорово слышать 🌞\n" + addedString,
+        "Пусть это ощущение мягко сопровождает тебя дальше ✨" + addedString,
+        "Отлично! Пусть так продолжается 💫" + addedString,
+        "Прекрасно! 💛" + addedString,
+        "Здорово! 🌈" + addedString
+      ],
+      daytime_normal: [
+        "Поняла тебя 🌿 \n Если захочешь подробнее описать своё состояние — просто воспользуйся кнопкой «📝 Добавить запись». Береги себя 💛",
+        "Спасибо, что ответил 🌼 \n Если появится желание рассказать больше — «Добавить запись» всегда доступна. Тепла тебе 🌱"
+      ]
     } as const
 
-    const which =
-      data === "daytime_ok" ? "daytime_ok" :
-      data === "daytime_normal" ? "daytime_normal" :
-      "daytime_hard"
+    const type = data === "daytime_ok" ? "daytime_ok" : "daytime_normal"
+    const replyText = random(responses[type])
 
-    const replyText = random(responses[which])
-    // редактируем текст сообщения с выбором
     await action.editMessageText(replyText)
-
-    // сохраняем быстрый ответ в бд
-    await saveQuickResponse(userId, which === "daytime_ok" ? "positive" : which === "daytime_normal" ? "neutral" : "negative")
+    await saveQuickResponse(userId, type === "daytime_ok" ? "positive" : "neutral")
 
     return
   }
 
-  // --- подробный ответ ---
+  if (data === "daytime_hard") {
+    await action.editMessageText(
+      "Понимаю… 💛\nПоделишься, что с тобой?",
+      {
+        reply_markup: {
+          inline_keyboard: [
+            [
+              { text: "Да", callback_data: "hard_yes" },
+              { text: "Нет", callback_data: "hard_no" }
+            ]
+          ]
+        }
+      }
+    )
+
+    const next = await conversation.waitFor("callback_query:data")
+    await next.answerCallbackQuery()
+    const choice = next.callbackQuery.data
+
+    if (choice === "hard_yes") {
+      await next.editMessageText("Хорошо 💛\n\nРасскажи, что происходит:")
+
+      const msg = await conversation.waitFor(":text")
+      const text = msg.message!.text || ""
+
+      await saveDetailedDescription(userId, text)
+
+      await msg.reply(
+        "Сочувствую тебе. Знай, что ты можешь: 💛" + 
+        "\n - позвонить или написать другу, \n -или воспользоваться кнопкой «📝 Добавить запись» в главном меню, чтобы потом обсудить это с психологом или прямо сейчас: ",
+        {
+          reply_markup: {
+            inline_keyboard: [
+              [{ text: "Записаться к психологу", callback_data: "hard_help_psy" }],
+              // [{ text: "Позвонить или написать другу", callback_data: "hard_help_friend" }],
+              // [{ text: "Добавить запись, чтобы обсудить потом", callback_data: "hard_add_entry" }]
+            ]
+          }
+        }
+      )
+
+      const final = await conversation.waitFor("callback_query:data")
+      await final.answerCallbackQuery()
+      return handleHardFinal(final, ctx)
+    }
+
+    if (choice === "hard_no") {
+      await next.editMessageText(
+        "Сочувствую тебе. \n\nЗнай, что ты можешь: 💛" + 
+        "\n - позвонить или написать другу, \n -или воспользоваться кнопкой «📝 Добавить запись» в главном меню, чтобы потом обсудить это с психологом или прямо сейчас: ",
+        {
+          reply_markup: {
+            inline_keyboard: [
+              [{ text: "Записаться к психологу", callback_data: "hard_help_psy" }],
+              // [{ text: "Позвонить или написать другу", callback_data: "hard_help_friend" }],
+              // [{ text: "Добавить запись, чтобы обсудить потом", callback_data: "hard_add_entry" }]
+            ]
+          }
+        }
+      )
+
+      const final = await conversation.waitFor("callback_query:data")
+      await final.answerCallbackQuery()
+      return handleHardFinal(final, ctx)
+    }
+  }
+
+  async function handleHardFinal(query: MyContext, ctx: MyContext) {
+    const data = query.callbackQuery!.data
+
+    if (data === "hard_help_psy") {
+      await query.editMessageText(
+        "Вот ссылка, по которой ты можешь записаться к психологу:\n\n" +
+        "https://t.me/psu_shatunova\n\n" +
+        "Ты не один 💛"
+      )
+    }
+
+    if (data === "hard_help_friend") {
+      await query.editMessageText(
+        "Иногда разговор с близким человеком может дать много тепла 🌿\n" +
+        "Подумай, кому ты мог бы написать или позвонить прямо сейчас 💛"
+      )
+    }
+
+    if (data === "hard_add_entry") {
+      await query.editMessageText(
+        "Хорошо! Чтобы добавить запись, нажми «📝 Добавить запись» в главном меню."
+      )
+    }
+  }
+
   if (data === "daytime_detailed") {
     await action.editMessageText(
       `💭 *Расскажи подробнее о своем состоянии:*\n\n` +
-      `Можешь описать:\n` +
-      `• Что чувствуешь эмоционально\n` +
-      `• Физические ощущения\n` +
-      `• Мысли, которые приходят\n` +
-      `• Или просто поделиться чем-то важным\n\n` +
-      `*Пиши в свободной форме* - я выслушаю 🌸`,
+      `• Эмоции\n• Физические ощущения\n• Мысли\n\n` +
+      `*Пиши в свободной форме* 🌸`,
       { parse_mode: "Markdown" }
     )
 
-    // ждём текст от пользователя
     const msg = await conversation.waitFor(":text")
     const text = msg.message!.text || ""
 
-    // сохраняем подробное описание
     await saveDetailedDescription(userId, text)
-
-    // подтверждаем пользователю
-    await msg.reply(`💫 Спасибо что поделился! Это ценно 🌸\n\nТвои мысли сохранены.`)
-
+    await msg.reply(`💫 Спасибо, что поделился 🌸 Твои мысли сохранены.`)
     return
   }
 
-  // --- пауза до завтра ---
   if (data === "daytime_pause_today") {
-    // обновляем lastDaytimeNotification = завтра начало дня в часовом поясе пользователя
-    try {
-      if (user) {
-        const tomorrow = moment().tz(user.settings.timezone).add(1, "day").startOf("day").toDate()
-        await users.updateOne(
-          { _id: user._id },
-          { $set: { "settings.lastDaytimeNotification": tomorrow } }
-        )
-      }
-    } catch (e) {
-      console.error("Failed to set daytime pause:", e)
+    if (user) {
+      const tomorrow = moment().tz(user.settings.timezone).add(1, "day").startOf("day").toDate()
+      await users.updateOne(
+        { _id: user._id },
+        { $set: { "settings.lastDaytimeNotification": tomorrow } }
+      )
     }
 
     await action.editMessageText(
       `Хорошо, я не буду беспокоить тебя до завтра 🌙\n\n` +
-      `Если захочешь записать что-то - используй кнопку "📝 Добавить запись"`
+      `Если захочешь записать что-то — используй кнопку "📝 Добавить запись"`
     )
 
     return
   }
 
-  // по умолчанию ничего
-  await action.editMessageText("Спасибо! Если захочешь — используй кнопку «📝 Добавить запись»")
+  await action.editMessageText("Спасибо! Если захочешь — используй «📝 Добавить запись»")
 }
-
-// ---------------------------
-// Вспомогательные функции
-// ---------------------------
 
 async function saveQuickResponse(userTelegramId: number, moodType: "positive" | "neutral" | "negative") {
   try {
@@ -172,7 +223,6 @@ async function saveQuickResponse(userTelegramId: number, moodType: "positive" | 
       1,
       { moodType }
     )
-    console.log(`Quick response saved for user ${userTelegramId}: ${moodType}`)
   } catch (e) {
     console.error("Failed to save quick daytime response:", e)
   }
@@ -190,8 +240,6 @@ async function saveDetailedDescription(userTelegramId: number, text: string, seq
       text,
       sequenceNumber
     )
-
-    console.log(`Detailed daytime saved for user ${userTelegramId}`)
   } catch (e) {
     console.error("Failed to save detailed daytime description:", e)
   }

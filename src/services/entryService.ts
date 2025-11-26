@@ -1,3 +1,4 @@
+// src\services\entryService.ts
 import { ObjectId } from 'mongodb';
 import { getCollection } from '../models/database';
 import { MoodEntry, MoodEntryCollection, SleepData, Emotion } from '../models/MoodEntry';

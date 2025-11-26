@@ -30,13 +30,17 @@ export async function userMiddleware(ctx: MyContext, next: () => Promise<void>) 
   let user = await usersCollection.findOne({ telegramId: ctx.from.id }) as User;
   
   if (!user) {
+    const settings = {
+      ...defaultUserSettings,
+      homeName: ctx.from.first_name
+    };
     const newUser: User = {
       telegramId: ctx.from.id,
       firstName: ctx.from.first_name,
       lastName: ctx.from.last_name,
       username: ctx.from.username,
       createdAt: new Date(),
-      settings: defaultUserSettings
+      settings: settings
     };
     
     const result = await usersCollection.insertOne(newUser);

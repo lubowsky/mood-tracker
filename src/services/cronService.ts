@@ -12,13 +12,16 @@ export function initCron(bot: Bot<MyContext>) {
 
     const users = await getAllUsers()
 
-    // 🔴 ТЕСТОВЫЙ РЕЖИМ - запускаем тестовый диалог каждую минуту для пользователя 151366380
-    // const testUser = users.find(user => user.telegramId === 151366380)
+    // 🔴 ТЕСТОВЫЙ РЕЖИМ - запускаем тестовый диалог каждую минуту для пользователя
+  //   const TEST_USER_ID = process.env.TEST_USER_ID
+      // ? Number(process.env.TEST_USER_ID)
+      // : null;
+    // const testUser = users.find(user => user.telegramId === TEST_USER_ID)
     // if (testUser) {
     //   try {
     //     console.log(`🧪 TEST: Starting test conversation for ${testUser.telegramId}`)
     //     // await launchConversation(bot, "test", testUser.telegramId)
-    //     await launchConversation(bot, "morning", testUser.telegramId)
+    //     await launchConversation(bot, "daytime", testUser.telegramId, 'test')
     //     console.log(`🧪 TEST: Successfully started test conversation`)
     //   } catch (err) {
     //     console.error("TEST: Error starting test conversation:", err)
@@ -33,6 +36,8 @@ export function initCron(bot: Bot<MyContext>) {
       const hour = now.hour()
       const minute = now.minute()
 
+      const homeName = user.settings.homeName
+
       const targetMorning = user.settings.morningNotification
       const targetEvening = user.settings.eveningNotification
       if (!targetMorning || !targetEvening) continue
@@ -46,7 +51,7 @@ export function initCron(bot: Bot<MyContext>) {
       if (hour === morningHour && minute === morningMinute) {
         try {
           console.log(`🌅 Sending morning notification to ${user.telegramId}`)
-          await launchConversation(bot, "morning", user.telegramId, user.firstName)
+          await launchConversation(bot, "morning", user.telegramId, homeName)
         } catch (err) {
           console.error("Error sending morning survey:", err)
         }
@@ -68,8 +73,6 @@ export function initCron(bot: Bot<MyContext>) {
           moment(morning).add(interval * 3, "minutes")
         ]
 
-        // console.log(daytimeTimes)
-
         const isDaytime =
           daytimeTimes.some(t => t.hour() === hour && t.minute() === minute)
 
@@ -77,22 +80,7 @@ export function initCron(bot: Bot<MyContext>) {
           try {
             console.log(`🌞 Sending daytime notification to ${user.telegramId}`)
 
-            // await bot.api.sendMessage(
-            //   user.telegramId,
-            //   "💫 Привет! Как твоё состояние в этот момент?\n\n Нажми на кнопку [☀️ День] в меню, чтобы запустить дневной диалог."
-            // )
-
-            // await bot.handleUpdate({
-            //   update_id: Date.now(),
-            //   message: {
-            //     message_id: Date.now(),
-            //     date: Math.floor(Date.now() / 1000),
-            //     chat: { id: user.telegramId, type: "private", first_name: user.firstName },
-            //     from: { id: user.telegramId, is_bot: false, first_name: user.firstName },
-               
-            //   }
-            // })
-            await launchConversation(bot, "daytime", user.telegramId, user.firstName)
+            await launchConversation(bot, "daytime", user.telegramId, homeName)
           } catch (err) {
             console.error("Error sending daytime survey:", err)
           }
@@ -106,22 +94,7 @@ export function initCron(bot: Bot<MyContext>) {
         try {
           console.log(`🌙 Sending evening notification to ${user.telegramId}`)
 
-          // await bot.api.sendMessage(
-          //   user.telegramId,
-          //   "🌙 Как прошёл твой день? Хочешь подвести небольшой итог?\n\n Нажми на кнопку [🌆 Вечер] в меню, чтобы запустить диалог."
-          // )
-
-          // await bot.handleUpdate({
-          //   update_id: Date.now(),
-          //   message: {
-          //     message_id: Date.now(),
-          //     date: Math.floor(Date.now() / 1000),
-          //     chat: { id: user.telegramId, type: "private", first_name: user.firstName },
-          //     from: { id: user.telegramId, is_bot: false, first_name: user.firstName },
-            
-          //   }
-          // })
-          await launchConversation(bot, "evening", user.telegramId, user.firstName)
+          await launchConversation(bot, "evening", user.telegramId, homeName)
         } catch (err) {
           console.error("Error sending evening survey:", err)
         }
