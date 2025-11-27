@@ -13,7 +13,7 @@ type EveningQuickKey =
 const map: Record<EveningQuickKey, { text: string; type: string; intensity: number }> = {
   evening_q_excellent: { text: "Отличный день! 🌟", type: "excellent", intensity: 8 },
   evening_q_normal:    { text: "Обычный день. 📅",  type: "normal",    intensity: 5 },
-  evening_q_hard:      { text: "Сложный день. 💪",  type: "hard",      intensity: 3 },
+  evening_q_hard:      { text: "Сложный день. 🤲",  type: "hard",      intensity: 3 },
   evening_q_tired:     { text: "Усталый день. 😴",  type: "tired",     intensity: 4 }
 }
 
@@ -31,7 +31,7 @@ export async function eveningConversation(
   }
 
   // --- отправляем приветствие ---
-  const message = `🌙 *Добрый вечер, ${user.firstName}!*  
+  const message = `🌙 *Добрый вечер, ${user.settings.homeName}!*  
 
 Как прошёл твой день?  
 Хочешь мягко подвести итоги и записать свои мысли?

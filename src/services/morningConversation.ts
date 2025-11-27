@@ -12,21 +12,29 @@ export async function morningConversation(
   const user = ctx.user
   const userId = ctx.from!.id
 
+  console.log("📌 morningConversation started for", ctx.from?.id)
+
   // Приветствие
-  await ctx.reply(
-    `🌅 Доброе утро, ${user?.firstName || ctx.from!.first_name}!\n\n` +
-    `Как спалось? Что снилось?\nРасскажи о своём сне и качестве сна.`,
-    {
-      reply_markup: {
-        inline_keyboard: [
-          [{ text: "💤 Оценить сон", callback_data: "start_sleep" }],
-          [{ text: "⏰ Пропустить", callback_data: "skip" }]
-        ]
+  try{
+    await ctx.reply(
+      `🌅 Доброе утро, ${user?.firstName || ctx.from!.first_name}!\n\n` +
+      `Как спалось? Что снилось?\nРасскажи о своём сне и качестве сна.`,
+      {
+        reply_markup: {
+          inline_keyboard: [
+            [{ text: "💤 Оценить сон", callback_data: "start_sleep" }],
+            [{ text: "⏰ Пропустить", callback_data: "skip" }]
+          ]
+        }
       }
-    }
-  )
+    )
+  } catch (err) {
+    console.log('ошибка при отправке первого утреннего сообщения: ', err)
+  }
+
 
   const first = await conversation.waitFor("callback_query:data")
+  console.log("📌 morning step1", ctx.from?.id)
   await first.answerCallbackQuery()
 
   if (first.callbackQuery.data === "skip") {
@@ -65,6 +73,7 @@ export async function morningConversation(
   )
 
   const scoreAction = await conversation.waitFor("callback_query:data")
+  console.log("📌 morning step2", ctx.from?.id)
   await scoreAction.answerCallbackQuery()
 
   const sleepQuality = Number(scoreAction.callbackQuery.data.replace("q_", ""))
@@ -78,6 +87,7 @@ export async function morningConversation(
 
   // Ждём текст описания сна
   const dreamMsg = await conversation.waitFor(":text")
+  console.log("📌 morning step3", ctx.from?.id)
   const dreamDescription = dreamMsg.message!.text
 
   // Сохраняем в базу
