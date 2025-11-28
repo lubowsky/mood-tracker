@@ -57,8 +57,8 @@ const popularEmotions = [
 function createEmotionsKeyboard(selectedEmotions: string[] = []): InlineKeyboard {
   const keyboard = new InlineKeyboard();
   
-  for (let i = 0; i < popularEmotions.length; i += 4) {
-    const rowEmotions = popularEmotions.slice(i, i + 4);
+  for (let i = 0; i < popularEmotions.length; i += 2) {
+    const rowEmotions = popularEmotions.slice(i, i + 2);
     
     rowEmotions.forEach(emotion => {
       const emotionText = emotion.split(' ')[1];
@@ -69,7 +69,7 @@ function createEmotionsKeyboard(selectedEmotions: string[] = []): InlineKeyboard
       keyboard.text(buttonText, callbackData);
     });
     
-    if (i + 4 < popularEmotions.length) {
+    if (i + 2 < popularEmotions.length) {
       keyboard.row();
     }
   }
