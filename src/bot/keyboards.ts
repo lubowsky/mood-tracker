@@ -1,5 +1,6 @@
 // src\bot\keyboards.ts
 import { Keyboard } from 'grammy';
+import { InlineKeyboard } from "grammy";
 
 export const mainMenu = new Keyboard()
   .text('📝 Добавить запись')
@@ -43,4 +44,9 @@ export const analyticsKeyboard = new Keyboard()
   .text('🔍 Корреляции')
   .text('↩️ Назад')
   .resized();
+
+  export const deleteAccountKeyboard = new InlineKeyboard()
+    .text("❗ Да, удалить", "delete_confirm")
+    .row()
+    .text("Отмена", "delete_cancel");
   

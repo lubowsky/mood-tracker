@@ -32,6 +32,7 @@ import type { MyContext } from "./bot/middlewares/userMiddleware"
 import { initCron } from "./services/cronService"
 import launchConversation from './bot/commands/launchConversation'
 import { changeNameConversation } from "./conversations/changeHomeNameConversation";
+import { deleteAccountConversation } from "./conversations/deleteAccountConversation"
 
 async function main() {
   await connectToDatabase()
@@ -47,6 +48,9 @@ async function main() {
   bot.use(createConversation(eveningConversation, "eveningConversation"))
   bot.use(createConversation(testConversation, "testConversation"))
   bot.use(createConversation<MyContext, MyContext>(changeNameConversation))
+  bot.use(
+    createConversation<MyContext, MyContext>(deleteAccountConversation, "deleteAccountConversation")
+  );
 
   bot.use(launchConversation)
 

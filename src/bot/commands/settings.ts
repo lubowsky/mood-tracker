@@ -3,7 +3,7 @@ import { Composer, InlineKeyboard } from 'grammy';
 import { MyContext } from '../middlewares/userMiddleware';
 import { getCollection } from '../../models/database';
 import { User, UserCollection, UserSettings } from '../../models/User';
-import { mainMenu } from '../keyboards';
+import { mainMenu, deleteAccountKeyboard } from '../keyboards';
 
 const composer = new Composer<MyContext>();
 
@@ -51,11 +51,12 @@ async function showMainSettings(ctx: MyContext) {
 
   const keyboard = new InlineKeyboard()
     .text('👤 Как к вам обращаться?', 'change_display_name').row()
-    .text('🕐 Изменить часовой пояс', 'change_timezone')
-    .text('🌅 Изменить утреннее время', 'change_morning_time').row()
-    .text('🌙 Изменить вечернее время', 'change_evening_time')
-    .text(settings.daytimeNotifications ? '🌞 Выключить дневные' : '🌞 Включить дневные', 'toggle_daytime_notifications').row()
+    .text('🕐 Часовой пояс', 'change_timezone').row()
+    .text('🌅 Утреннее время', 'change_morning_time')
+    .text('🌙 Вечернее время', 'change_evening_time').row()
+    .text(settings.daytimeNotifications ? '🌞 Выключить дневные' : '🌞 Включить дневные', 'toggle_daytime_notifications')
     .text(settings.notificationsEnabled ? '🔕 Выключить все' : '🔔 Включить все', 'toggle_notifications').row()
+    .text('❌ Удалить аккаунт', 'delete_account').row()
     .text('✅ Завершить настройки', 'finish_settings');
 
   if (ctx.callbackQuery) {
@@ -83,6 +84,11 @@ composer.callbackQuery('finish_settings', async (ctx) => {
 composer.callbackQuery('change_display_name', async (ctx) => {
   await ctx.answerCallbackQuery();
   return await ctx.conversation.enter("changeNameConversation");
+});
+
+composer.callbackQuery("delete_account", async (ctx) => {
+  await ctx.answerCallbackQuery();
+  return await ctx.conversation.enter("deleteAccountConversation");
 });
 
 composer.callbackQuery('change_timezone', async (ctx) => {
@@ -148,26 +154,6 @@ async function showTimezoneSettings(ctx: MyContext) {
   keyboard.row(InlineKeyboard.text('↩️ Назад', 'back_to_settings'));
 
   await ctx.editMessageText('🕐 *Выбери свой часовой пояс:*', {
-    parse_mode: 'Markdown',
-    reply_markup: keyboard
-  });
-}
-
-async function showHomeNameSettings(ctx: MyContext) {
-  const user = ctx.user!;
-  const currentHomeName = user.settings.homeName || ctx.from?.first_name || 'пользователь';
-  
-  // Устанавливаем состояние ожидания имени
-  ctx.session.awaitingHomeName = true;
-  
-  const keyboard = new InlineKeyboard();
-  keyboard.row(InlineKeyboard.text('↩️ Назад', 'back_to_settings'));
-  
-  await ctx.editMessageText(
-    'Давайте сделаем общение более персонализированным! ✨\n\n' +
-    'Какое имя мне использовать для обращений к вам? Это сделает уведомления более тёплыми и персональными.\n\n' +
-    `Сейчас я обращаюсь к вам как «${currentHomeName}». Если вы ничего не измените, я буду продолжать так обращаться.\n\n` +
-    'Просто отправьте желаемое обращение в чат, и я его запомню!', {
     parse_mode: 'Markdown',
     reply_markup: keyboard
   });
