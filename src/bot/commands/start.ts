@@ -31,7 +31,9 @@ composer.callbackQuery('policy_accept', async (ctx) => {
 
 *Давай сразу настроим уведомления!* Выбери часовой пояс и удобное время.`
 
-  await ctx.reply(greeting);
+  await ctx.reply(greeting, {
+    parse_mode: "Markdown"
+  });
 
   await new Promise((r) => setTimeout(r, 0));
 

@@ -257,14 +257,15 @@ async function saveEntryAndFinish(ctx: any, session: EntrySession, userId: numbe
     
     // ОБНОВЛЕННАЯ СВОДКА
     let summary = `✅ *Запись сохранена!*\n\n`;
-    summary += `• Время суток: ${getTimeOfDay()}\n`;
+    // summary += `• Время суток: ${getTimeOfDay()}\n`;
     summary += `• Физическое состояние: ${session.data.overallPhysical}/10\n`;
     summary += `• Ментальное состояние: ${session.data.overallMental}/10\n`;
     summary += `• Симптомы: ${session.data.physicalSymptoms.map(s => s.name).join(', ') || 'нет'}\n`;
     summary += `• Эмоции: ${session.data.emotions.map(e => e.name).join(', ') || 'нет'}\n`;
     
     if (session.data.sleepData?.hours) {
-      summary += `• Сон: ${session.data.sleepData.hours} часов (качество: ${session.data.sleepData.quality}/10)\n`;
+      const qualityRounded = Number(session.data.sleepData.quality).toFixed(1);
+      summary += `• Сон: ${session.data.sleepData.hours} часов (качество: ${qualityRounded}/10)\n`;
     }
     if (session.data.stressLevel) summary += `• Стресс: ${session.data.stressLevel}/10\n`;
     if (session.data.food) summary += `• Питание: ${session.data.food}\n`;
