@@ -8,6 +8,7 @@ import { User, UserCollection, defaultUserSettings } from '../../models/User';
 export interface MySession {
   isAddingEntry?: boolean;
   awaitingHomeName?: boolean;
+  broadcastMode?: boolean
 }
 
 export type MyContext =

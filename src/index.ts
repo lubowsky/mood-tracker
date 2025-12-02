@@ -21,6 +21,7 @@ import addEntry from './bot/commands/addEntry';
 import getStats from './bot/commands/getStats';
 import listEntries from './bot/commands/listEntries';
 import settings from './bot/commands/settings';
+import broadcast from './features/broadcast'
 
 import { connectToDatabase } from "./models/database"
 import { morningConversation } from "./services/morningConversation"
@@ -60,6 +61,7 @@ async function main() {
   bot.use(addEntry);
   bot.use(getStats);
   bot.use(listEntries);
+    bot.use(broadcast);
 
   // cron
   initCron(bot)

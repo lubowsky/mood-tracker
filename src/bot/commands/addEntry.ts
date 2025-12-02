@@ -498,20 +498,25 @@ composer.callbackQuery(/^quick_(.+)$/, async (ctx) => {
 });
 
 // ОБРАБОТЧИК СООБЩЕНИЙ
-composer.on('message:text', async (ctx) => {
-  if (ctx.message.text?.endsWith("_internal")) {
-    return
+composer.on('message:text', async (ctx, next) => {
+  if (ctx.message.text.startsWith('/')) {
+    return next();
   }
-  console.log('🟢 message:text addEntry');
+  if (ctx.message.text?.endsWith("_internal")) {
+    return next();
+  }
+  console.log('🟢 Вызван обработчик из addEntry message:text addEntry');
   const userId = ctx.from!.id;
   const session = sessions.get(userId);
+
+  console.log('sessiaon: ', ctx.session)
   
   // if (!session) return;
 
-  if (ctx.session?.awaitingHomeName) return;
+  if (ctx.session?.awaitingHomeName || ctx.session?.broadcastMode) return next();;
 
   if (!session || !ctx.session.isAddingEntry) {
-    return; // Пропускаем все сообщения не связанные с добавлением записи
+    return next(); // Пропускаем все сообщения не связанные с добавлением записи
   }
   
   console.log('🟢 message:text addEntry - user is in adding process Пользователь нажал добавить запись и добавляет её');
