@@ -212,6 +212,7 @@ composer.callbackQuery(/^sleep_(\w+)$/, async (ctx) => {
 });
 
 async function saveEntryAndFinish(ctx: any, session: EntrySession, userId: number) {
+  console.log('Пользователь завершает ручной ввод addEntry', Number(ctx.from?.id))
   try {
     // Добавляем симптомы из временного хранилища
     if (session.currentSymptoms) {
@@ -280,6 +281,7 @@ async function saveEntryAndFinish(ctx: any, session: EntrySession, userId: numbe
     await ctx.reply('Через некоторое время сможешь проанализировать закономерности в статистике!', {
       reply_markup: mainMenu
     });
+    console.log('addEntry успешно сохранено', Number(ctx.from?.id))
     
   } catch (error) {
     console.error('Error saving entry:', error);

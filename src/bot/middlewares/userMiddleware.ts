@@ -9,6 +9,10 @@ export interface MySession {
   isAddingEntry?: boolean;
   awaitingHomeName?: boolean;
   broadcastMode?: boolean
+  lastBroadcast?: Array<{
+    userId: number;
+    msgId: number;
+  }>;
 }
 
 export type MyContext =
