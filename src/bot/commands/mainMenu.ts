@@ -215,8 +215,10 @@ composer.hears('📋 Последние записи', async (ctx) => {
     entries.forEach((entry, index) => {
       response += `*Запись #${index + 1}* (${formatDate(entry.timestamp)})\n`;
 
-      // ----- Утренний опрос: сон -----
-      if (entry.timeOfDay === 'morning' && entry.sleepData) {
+      const isMorning = entry.timeOfDay === 'morning';
+
+      // ---------- Утро: сон ----------
+      if (isMorning && entry.sleepData) {
         response += `💤 *Сон:*\n`;
         if (entry.sleepData.hours !== undefined) {
           response += `• Длительность: ${entry.sleepData.hours} ч.\n`;
@@ -229,17 +231,25 @@ composer.hears('📋 Последние записи', async (ctx) => {
         }
       }
 
-      // 🔸 Физическое состояние — только если есть
-      if (entry.overallPhysical !== undefined && entry.overallPhysical !== null) {
-        response += `🏥 Физическое: ${entry.overallPhysical}/10\n`;
+      // ---------- Дневные/вечерние записи ----------
+      if (!isMorning) {
+        // Физическое
+        if (entry.overallPhysical != null) {
+          response += `🏥 Физическое: ${entry.overallPhysical}/10\n`;
+        }
+
+        // Ментальное
+        if (entry.overallMental != null) {
+          response += `🧠 Ментальное: ${entry.overallMental}/10\n`;
+        }
+
+        // Мысли
+        if (entry.thoughts) {
+          response += `🧠 Мысли: ${entry.thoughts}\n`;
+        }
       }
 
-      // 🔸 Ментальное состояние — только если есть
-      if (entry.overallMental !== undefined && entry.overallMental !== null) {
-        response += `🧠 Ментальное: ${entry.overallMental}/10\n`;
-      }
-
-      // 🔸 Симптомы
+      // ---------- Симптомы ----------
       if (entry.physicalSymptoms?.length > 0) {
         const symptoms = entry.physicalSymptoms.map((s) =>
           s.intensity ? `${s.name} (${s.intensity}/10)` : s.name
@@ -247,7 +257,7 @@ composer.hears('📋 Последние записи', async (ctx) => {
         response += `💊 Симптомы: ${symptoms.join(', ')}\n`;
       }
 
-      // 🔸 Эмоции
+      // ---------- Эмоции ----------
       if (entry.emotions?.length > 0) {
         const emotions = entry.emotions.map((e) =>
           e.intensity ? `${e.name} (${e.intensity}/10)` : e.name
@@ -255,34 +265,27 @@ composer.hears('📋 Последние записи', async (ctx) => {
         response += `💭 Эмоции: ${emotions.join(', ')}\n`;
       }
 
-      // 🔸 Мысли
-      if (entry.thoughts) {
-        response += `🧠 Мысли: ${entry.thoughts}\n`;
+      // ---------- Триггеры ----------
+      if (entry.triggers?.length > 0) {
+        response += `⚡ Триггеры: ${entry.triggers.join(', ')}\n`;
       }
 
-      const triggers = entry.triggers ?? [];
-      // 🔸 Триггеры
-      if (triggers?.length > 0) {
-        response += `⚡ Триггеры: ${triggers.join(', ')}\n`;
+      // ---------- Активности ----------
+      if (entry.activities?.length > 0) {
+        response += `🏃 Активности: ${entry.activities.join(', ')}\n`;
       }
 
-      const activities = entry.activities ?? [];
-      // 🔸 Активности
-      if (activities?.length > 0) {
-        response += `🏃 Активности: ${activities.join(', ')}\n`;
-      }
-
-      // 🔸 Питание
+      // ---------- Питание ----------
       if (entry.food) {
         response += `🍽 Питание: ${entry.food}\n`;
       }
 
-      // 🔸 Стресс
-      if (entry.stressLevel !== undefined && entry.stressLevel !== null) {
+      // ---------- Стресс ----------
+      if (entry.stressLevel != null) {
         response += `😣 Стресс: ${entry.stressLevel}/10\n`;
       }
 
-      // 🔸 Заметки
+      // ---------- Заметки ----------
       if (entry.notes) {
         response += `📝 Заметки: ${entry.notes}\n`;
       }
