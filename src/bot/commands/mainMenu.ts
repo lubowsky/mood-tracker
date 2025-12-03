@@ -264,15 +264,15 @@ composer.hears('📋 Последние записи', async (ctx) => {
         );
         response += `💭 Эмоции: ${emotions.join(', ')}\n`;
       }
-
+      const triggers = entry.triggers || []
       // ---------- Триггеры ----------
-      if (entry.triggers?.length > 0) {
-        response += `⚡ Триггеры: ${entry.triggers.join(', ')}\n`;
+      if (triggers?.length > 0) {
+        response += `⚡ Триггеры: ${triggers.join(', ')}\n`;
       }
-
+      const activities = entry.activities || []
       // ---------- Активности ----------
-      if (entry.activities?.length > 0) {
-        response += `🏃 Активности: ${entry.activities.join(', ')}\n`;
+      if (activities?.length > 0) {
+        response += `🏃 Активности: ${activities.join(', ')}\n`;
       }
 
       // ---------- Питание ----------
