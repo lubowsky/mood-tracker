@@ -143,53 +143,162 @@ async function generateStats(ctx: MyContext, days: number) {
   }
 }
 
+// composer.hears('📋 Последние записи', async (ctx) => {
+//   console.log('Last entries button pressed by user:', ctx.from?.id);
+  
+//   try {
+//     const { EntryService } = await import('../../services/entryService');
+//     const { formatDate } = await import('../../utils/timeUtils');
+    
+//     const entries = await EntryService.getUserEntries(ctx.user!._id!, 10);
+    
+//     if (entries.length === 0) {
+//       await ctx.reply('У тебя пока нет записей. Начни с команды "📝 Добавить запись"', {
+//         reply_markup: mainMenuKeyboard // ← используем переименованный импорт
+//       });
+//       return;
+//     }
+    
+//     let response = `📋 *Последние ${entries.length} записей:*\n\n`;
+    
+//     entries.forEach((entry, index) => {
+//       response += `*Запись #${index + 1}* (${formatDate(entry.timestamp)})\n`;
+//       response += `🏥 Физическое: ${entry.overallPhysical}/10\n`;
+//       response += `🧠 Ментальное: ${entry.overallMental}/10\n`;
+      
+//       if (entry.physicalSymptoms.length > 0) {
+//         response += `💊 Симптомы: ${entry.physicalSymptoms.map(s => s.name).join(', ')}\n`;
+//       }
+      
+//       if (entry.emotions.length > 0) {
+//         response += `💭 Эмоции: ${entry.emotions.map(e => e.name).join(', ')}\n`;
+//       }
+      
+//       if (entry.notes) {
+//         response += `📝 Заметки: ${entry.notes.slice(0, 50)}${entry.notes.length > 50 ? '...' : ''}\n`;
+//       }
+      
+//       response += '─'.repeat(20) + '\n';
+//     });
+    
+//     await ctx.reply(response, { 
+//       parse_mode: 'Markdown',
+//       reply_markup: mainMenuKeyboard // ← используем переименованный импорт
+//     });
+    
+//   } catch (error) {
+//     console.error('Error listing entries:', error);
+//     await ctx.reply('Произошла ошибка при получении записей', {
+//       reply_markup: mainMenuKeyboard // ← используем переименованный импорт
+//     });
+//   }
+// });
 composer.hears('📋 Последние записи', async (ctx) => {
   console.log('Last entries button pressed by user:', ctx.from?.id);
-  
+
   try {
     const { EntryService } = await import('../../services/entryService');
     const { formatDate } = await import('../../utils/timeUtils');
-    
+
     const entries = await EntryService.getUserEntries(ctx.user!._id!, 10);
-    
+
     if (entries.length === 0) {
-      await ctx.reply('У тебя пока нет записей. Начни с команды "📝 Добавить запись"', {
-        reply_markup: mainMenuKeyboard // ← используем переименованный импорт
-      });
+      await ctx.reply(
+        'У тебя пока нет записей. Начни с команды "📝 Добавить запись"',
+        { reply_markup: mainMenuKeyboard }
+      );
       return;
     }
-    
+
     let response = `📋 *Последние ${entries.length} записей:*\n\n`;
-    
+
     entries.forEach((entry, index) => {
       response += `*Запись #${index + 1}* (${formatDate(entry.timestamp)})\n`;
-      response += `🏥 Физическое: ${entry.overallPhysical}/10\n`;
-      response += `🧠 Ментальное: ${entry.overallMental}/10\n`;
-      
-      if (entry.physicalSymptoms.length > 0) {
-        response += `💊 Симптомы: ${entry.physicalSymptoms.map(s => s.name).join(', ')}\n`;
+
+      // ----- Утренний опрос: сон -----
+      if (entry.timeOfDay === 'morning' && entry.sleepData) {
+        response += `💤 *Сон:*\n`;
+        if (entry.sleepData.hours !== undefined) {
+          response += `• Длительность: ${entry.sleepData.hours} ч.\n`;
+        }
+        if (entry.sleepData.quality !== undefined) {
+          response += `• Качество: ${entry.sleepData.quality}/10\n`;
+        }
+        if (entry.sleepData.dreamDescription) {
+          response += `• Сон: ${entry.sleepData.dreamDescription}\n`;
+        }
       }
-      
-      if (entry.emotions.length > 0) {
-        response += `💭 Эмоции: ${entry.emotions.map(e => e.name).join(', ')}\n`;
+
+      // 🔸 Физическое состояние — только если есть
+      if (entry.overallPhysical !== undefined && entry.overallPhysical !== null) {
+        response += `🏥 Физическое: ${entry.overallPhysical}/10\n`;
       }
-      
+
+      // 🔸 Ментальное состояние — только если есть
+      if (entry.overallMental !== undefined && entry.overallMental !== null) {
+        response += `🧠 Ментальное: ${entry.overallMental}/10\n`;
+      }
+
+      // 🔸 Симптомы
+      if (entry.physicalSymptoms?.length > 0) {
+        const symptoms = entry.physicalSymptoms.map((s) =>
+          s.intensity ? `${s.name} (${s.intensity}/10)` : s.name
+        );
+        response += `💊 Симптомы: ${symptoms.join(', ')}\n`;
+      }
+
+      // 🔸 Эмоции
+      if (entry.emotions?.length > 0) {
+        const emotions = entry.emotions.map((e) =>
+          e.intensity ? `${e.name} (${e.intensity}/10)` : e.name
+        );
+        response += `💭 Эмоции: ${emotions.join(', ')}\n`;
+      }
+
+      // 🔸 Мысли
+      if (entry.thoughts) {
+        response += `🧠 Мысли: ${entry.thoughts}\n`;
+      }
+
+      const triggers = entry.triggers ?? [];
+      // 🔸 Триггеры
+      if (triggers?.length > 0) {
+        response += `⚡ Триггеры: ${triggers.join(', ')}\n`;
+      }
+
+      const activities = entry.activities ?? [];
+      // 🔸 Активности
+      if (activities?.length > 0) {
+        response += `🏃 Активности: ${activities.join(', ')}\n`;
+      }
+
+      // 🔸 Питание
+      if (entry.food) {
+        response += `🍽 Питание: ${entry.food}\n`;
+      }
+
+      // 🔸 Стресс
+      if (entry.stressLevel !== undefined && entry.stressLevel !== null) {
+        response += `😣 Стресс: ${entry.stressLevel}/10\n`;
+      }
+
+      // 🔸 Заметки
       if (entry.notes) {
-        response += `📝 Заметки: ${entry.notes.slice(0, 50)}${entry.notes.length > 50 ? '...' : ''}\n`;
+        response += `📝 Заметки: ${entry.notes}\n`;
       }
-      
+
       response += '─'.repeat(20) + '\n';
     });
-    
-    await ctx.reply(response, { 
+
+    await ctx.reply(response, {
       parse_mode: 'Markdown',
-      reply_markup: mainMenuKeyboard // ← используем переименованный импорт
+      reply_markup: mainMenuKeyboard
     });
-    
+
   } catch (error) {
     console.error('Error listing entries:', error);
     await ctx.reply('Произошла ошибка при получении записей', {
-      reply_markup: mainMenuKeyboard // ← используем переименованный импорт
+      reply_markup: mainMenuKeyboard
     });
   }
 });
