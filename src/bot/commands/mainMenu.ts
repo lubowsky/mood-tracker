@@ -232,7 +232,7 @@ composer.hears('📋 Последние записи', async (ctx) => {
       }
 
       // ---------- Дневные/вечерние записи ----------
-      if (!isMorning) {
+      if (!isMorning && !entry.sleepData) {
         // Физическое
         if (entry.overallPhysical != null) {
           response += `🏥 Физическое: ${entry.overallPhysical}/10\n`;
