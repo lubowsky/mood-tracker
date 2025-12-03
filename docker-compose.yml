@@ -34,8 +34,6 @@ services:
       ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_ROOT_PASSWORD:-password123}
       ME_CONFIG_MONGODB_URL: mongodb://${MONGO_ROOT_USERNAME:-admin}:${MONGO_ROOT_PASSWORD:-password123}@mongodb:27017/
       ME_CONFIG_BASICAUTH: ${MONGO_EXPRESS_AUTH:-false}
-    ports:
-      - "8081:8081"
     depends_on:
       - mongodb
     networks:
