@@ -120,3 +120,4 @@ temp/
 
 # MongoDB initialization with credentials
 mongo-init.js
+docker-compose.yml

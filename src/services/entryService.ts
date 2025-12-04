@@ -3,17 +3,21 @@ import { ObjectId } from 'mongodb';
 import { getCollection } from '../models/database';
 import { MoodEntry, MoodEntryCollection, SleepData, Emotion } from '../models/MoodEntry';
 import { getTimeOfDay } from '../utils/timeUtils';
+import { getUserSettings } from './userService';
 
 export class EntryService {
   // Основной метод создания записи
   static async createEntry(entryData: Omit<MoodEntry, '_id' | 'timestamp' | 'timeOfDay'>): Promise<ObjectId> {
     const collection = await getCollection(MoodEntryCollection);
     const timestamp = new Date();
+
+    const userSettings = await getUserSettings(entryData.userId as any);
+    const timezone = userSettings?.timezone || 'UTC';
     
     const entry: MoodEntry = {
       ...entryData,
       timestamp,
-      timeOfDay: getTimeOfDay(timestamp)
+      timeOfDay: getTimeOfDay(timestamp, timezone)
     };
     
     const result = await collection.insertOne(entry);

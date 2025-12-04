@@ -18,11 +18,20 @@ export interface SleepData {
   hours?: number;
 }
 
+export const TIME_OF_DAY = {
+  MORNING: "morning",
+  AFTERNOON: "afternoon",
+  EVENING: "evening",
+  NIGHT: "night"
+} as const;
+
+export type TimeOfDay = typeof TIME_OF_DAY[keyof typeof TIME_OF_DAY];
+
 export interface MoodEntry {
   _id?: ObjectId;
   userId: ObjectId;
   timestamp: Date;
-  timeOfDay: 'morning' | 'afternoon' | 'evening' | 'night';
+  timeOfDay: TimeOfDay;
   
   // Данные сна (для утренних записей)
   sleepData?: SleepData;

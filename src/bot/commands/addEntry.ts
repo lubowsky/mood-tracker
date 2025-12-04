@@ -4,7 +4,6 @@ import { MyContext } from '../middlewares/userMiddleware';
 import { cancelKeyboard, mainMenu } from '../keyboards';
 import { EntryService } from '../../services/entryService';
 import { formatDate } from '../../utils/timeUtils';
-import { ObjectId } from 'mongodb';
 
 const composer = new Composer<MyContext>();
 
