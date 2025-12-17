@@ -5,6 +5,7 @@ import { getAllUsers } from "./userService"
 import type { Bot } from "grammy"
 import type { MyContext } from "../bot/middlewares/userMiddleware"
 import { launchConversation } from "./conversationLauncher"
+import { canSendToUser } from "./telegramGuard"
 
 export function initCron(bot: Bot<MyContext>) {
   cron.schedule("* * * * *", async () => {
@@ -21,7 +22,7 @@ export function initCron(bot: Bot<MyContext>) {
     //   try {
     //     console.log(`🧪 TEST: Starting test conversation for ${testUser.telegramId}`)
     //     // await launchConversation(bot, "test", testUser.telegramId)
-    //     await launchConversation(bot, "daytime", testUser.telegramId, 'test')
+    //     await launchConversation(bot, "morning", 151366380, 'test')
     //     console.log(`🧪 TEST: Successfully started test conversation`)
     //   } catch (err) {
     //     console.error("TEST: Error starting test conversation:", err)
@@ -51,6 +52,10 @@ export function initCron(bot: Bot<MyContext>) {
       if (hour === morningHour && minute === morningMinute) {
         try {
           console.log(`🌅 Sending morning notification to ${user.telegramId}`)
+          
+          const canSend = await canSendToUser(bot, user.telegramId)
+          if (!canSend) continue
+
           await launchConversation(bot, "morning", user.telegramId, homeName)
         } catch (err) {
           console.error("Error sending morning survey:", err)
@@ -80,6 +85,9 @@ export function initCron(bot: Bot<MyContext>) {
           try {
             console.log(`🌞 Sending daytime notification to ${user.telegramId}`)
 
+            const canSend = await canSendToUser(bot, user.telegramId)
+            if (!canSend) continue
+
             await launchConversation(bot, "daytime", user.telegramId, homeName)
           } catch (err) {
             console.error("Error sending daytime survey:", err)
@@ -93,6 +101,9 @@ export function initCron(bot: Bot<MyContext>) {
       if (hour === eveningHour && minute === eveningMinute) {
         try {
           console.log(`🌙 Sending evening notification to ${user.telegramId}`)
+
+          const canSend = await canSendToUser(bot, user.telegramId)
+          if (!canSend) continue
 
           await launchConversation(bot, "evening", user.telegramId, homeName)
         } catch (err) {
