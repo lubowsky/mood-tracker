@@ -103,7 +103,11 @@ composer.on("message:text", async (ctx) => {
   for (const u of users) {
     try {
       const msg = await ctx.api.sendMessage(u.telegramId, messageText, {
+        parse_mode: "Markdown",
         disable_notification: silent,
+        link_preview_options: {
+          is_disabled: true
+        }
       });
 
       sentMessages.push({ userId: u.telegramId, msgId: msg.message_id });
