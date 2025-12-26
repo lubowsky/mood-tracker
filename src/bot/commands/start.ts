@@ -10,6 +10,21 @@ composer.command('start', async (ctx) => {
   const keyboard = new InlineKeyboard()
     .text('Согласен', 'policy_accept');
 
+  try {
+      await ctx.api.setChatMenuButton({
+          chat_id: ctx.chat?.id,
+          menu_button: {
+              type: "web_app",
+              text: "Статистика",
+              web_app: {
+                  url: `https://modd-tracker-mini-app.vercel.app?telegramId=${ctx.from?.id}`,
+              },
+          },
+      });
+  } catch (error) {
+      console.error("Ошибка установки кнопки меню:", error);
+  }
+
   await ctx.reply(policyText, {
     parse_mode: 'Markdown',
     reply_markup: keyboard

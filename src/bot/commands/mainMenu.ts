@@ -616,4 +616,36 @@ composer.callbackQuery('back_to_emotions', async (ctx) => {
   });
 });
 
+composer.hears("📊 Подписка", async (ctx) => {
+  await ctx.reply("❌ У вас нет активных подписок.\n\nПерейти к покупке?",
+    {
+      reply_markup: new InlineKeyboard().text(
+        "📋 Список тарифов",
+        "show_tariffs"
+      ),
+    }
+  )
+})
+
+composer.callbackQuery("show_tariffs", async (ctx) => {
+  await ctx.answerCallbackQuery();
+
+  await ctx.reply(
+    "Выберите желаемый для вас тарифный план:",
+    {
+      reply_markup: new InlineKeyboard()
+        .text("🗓 7 дней — безвозмездно", "tariff_7_free")
+        .row()
+        .text("📅 30 дней — 150 ₽", "tariff_30_paid"),
+    }
+  );
+});
+
+composer.callbackQuery(["tariff_7_free", "tariff_30_paid"], async (ctx) => {
+  await ctx.answerCallbackQuery({
+    text: "Функция будет доступна позже",
+    show_alert: false,
+  });
+});
+
 export default composer;
