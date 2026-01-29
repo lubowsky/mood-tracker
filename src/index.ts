@@ -34,11 +34,18 @@ import { initCron } from "./services/cronService"
 import launchConversation from './bot/commands/launchConversation'
 import { changeNameConversation } from "./conversations/changeHomeNameConversation";
 import { deleteAccountConversation } from "./conversations/deleteAccountConversation"
+// import { telegramSuccessPaymentHandler } from "./bot/commands/payments";
 
 async function main() {
   await connectToDatabase()
 
   const bot = new Bot<MyContext>(process.env.BOT_TOKEN!)
+
+  bot.on('pre_checkout_query', (ctx) => {
+    ctx.answerPreCheckoutQuery(true)
+  })
+
+  // bot.on(':successful_payment', telegramSuccessPaymentHandler)
 
   bot.use(session({ initial: () => ({}) }))
   bot.use(userMiddleware)
@@ -61,7 +68,7 @@ async function main() {
   bot.use(addEntry);
   bot.use(getStats);
   bot.use(listEntries);
-    bot.use(broadcast);
+  bot.use(broadcast);
 
   // cron
   initCron(bot)

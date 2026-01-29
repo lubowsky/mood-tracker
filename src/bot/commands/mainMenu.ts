@@ -616,6 +616,8 @@ composer.callbackQuery('back_to_emotions', async (ctx) => {
   });
 });
 
+
+// Обработчики кнопок подписки
 composer.hears("📊 Подписка", async (ctx) => {
   await ctx.reply("❌ У вас нет активных подписок.\n\nПерейти к покупке?",
     {
@@ -634,9 +636,9 @@ composer.callbackQuery("show_tariffs", async (ctx) => {
     "Выберите желаемый для вас тарифный план:",
     {
       reply_markup: new InlineKeyboard()
-        .text("🗓 7 дней — безвозмездно", "tariff_7_free")
+        .text("🗓 7 дней — 99₽", "tariff_7_free")
         .row()
-        .text("📅 30 дней — 150 ₽", "tariff_30_paid"),
+        .text("📅 30 дней — 199₽", "tariff_30_paid"),
     }
   );
 });
