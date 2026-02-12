@@ -1,26 +1,24 @@
 // src/models/UserSubscription.ts
 import { ObjectId } from 'mongodb';
 
+import { TariffKey } from './tariffs';
+
 export interface UserSubscription {
   _id?: ObjectId;
   telegramId: number;
-  
-  // Статус подписки
+
+  plan: TariffKey;        // trial | 7days | 30days
   isActive: boolean;
-  plan: '7days' | '30days' | null;
-  
-  // Период подписки
+
   startDate: Date;
   endDate: Date;
-  
-  // Оплата
+
   paymentId?: string;
-  amountPaid: number;
-  paymentDate?: Date;
-  
-  // Для продления
-  autoRenew: boolean;
-  
+
+  warned3days?: boolean;
+  warned1day?: boolean;
+  expiredNotified?: boolean;
+
   createdAt: Date;
   updatedAt: Date;
 }

@@ -5,6 +5,7 @@ import { getCollection } from "../models/database"
 import { MoodEntryCollection } from "../models/MoodEntry"
 import { UserCollection } from "../models/User"
 import { finishConversation, goMainButton } from "../utils/conversationUtils"
+import { getMainMenu } from "../bot/keyboards"
 
 function createSleepHoursKeyboard() {
   return {
@@ -183,9 +184,13 @@ export async function morningConversation(
 
   const phrase = phrases[Math.floor(Math.random() * phrases.length)]
 
+  console.log('перед ответом бота на утреннее взаимодействие', ctx.hasAccess)
+
   await ctx.reply(
     `${phrase}\n\n` +
-    `В любой момент ты можешь добавить запись о своём состоянии.`
+    `В любой момент ты можешь добавить запись о своём состоянии.`, {
+      reply_markup: getMainMenu(!!ctx.hasAccess)
+    }
   )
 
   await finishConversation(ctx)

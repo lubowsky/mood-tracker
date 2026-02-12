@@ -3,6 +3,7 @@ import type { MyContext } from "../bot/middlewares/userMiddleware"
 import { getCollection } from "../models/database"
 import { UserCollection, type User } from "../models/User"
 import { MoodEntryCollection } from "../models/MoodEntry"
+import { getMainMenu } from "../bot/keyboards"
 
 type EveningQuickKey =
   | "evening_q_excellent"
@@ -101,7 +102,9 @@ export async function eveningConversation(
 
     await ctx.reply(
       `Спасибо, что поделился 🌿  
-Береги себя и хорошего тебе вечера.`
+        Береги себя и хорошего тебе вечера.`, {
+          reply_markup: getMainMenu(!!ctx.hasAccess)
+        }
     )
 
     return
@@ -151,8 +154,8 @@ export async function eveningConversation(
 
     await quick.editMessageText(
       `${chosen.text}\n\nСпасибо, что поделился ✨  
-Если захочешь подробнее описать своё состояние — нажми «Добавить запись» в главном меню.  
-Хорошего тебе завершения дня 🌙`
+        Если захочешь подробнее описать своё состояние — нажми «Добавить запись» в главном меню.  
+        Хорошего тебе завершения дня 🌙`
     )
 
     return

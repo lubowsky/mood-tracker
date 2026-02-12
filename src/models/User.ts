@@ -1,6 +1,9 @@
 // src\models\User.ts
 import { ObjectId } from 'mongodb';
 
+export type UserRole = 'user' | 'admin' | 'tester';
+export type UserStatus = 'active' | 'blocked';
+
 export interface UserSettings {
   timezone: string; 
   morningNotification: string;
@@ -19,9 +22,14 @@ export interface User {
   username?: string;
   createdAt: Date;
   settings: UserSettings;
+  role: UserRole;
+  isTrialExhausted?: boolean;
+  status: UserStatus;
+  lastNotificationKey?: string;
 }
 
 export const UserCollection = 'users';
+export const defaultUserRole: UserRole = 'user';
 
 export const defaultUserSettings: Omit<UserSettings, 'homeName'> = {
   timezone: 'Europe/Moscow',

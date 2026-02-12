@@ -1,11 +1,11 @@
 // src\utils\conversationUtils.ts
 
-import { mainMenu } from "../bot/keyboards";
+import { getMainMenu } from "../bot/keyboards";
 import { MyContext } from "../bot/middlewares/userMiddleware";
 
 export async function finishConversation(ctx: MyContext) {
   await ctx.reply("🏠 Главное меню:", {
-    reply_markup: mainMenu
+    reply_markup: getMainMenu(!!ctx.hasAccess)
   })
 }
 

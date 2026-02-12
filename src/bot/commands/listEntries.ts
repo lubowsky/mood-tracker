@@ -2,7 +2,7 @@ import { Composer, InlineKeyboard } from 'grammy';
 import { MyContext } from '../middlewares/userMiddleware';
 import { EntryService } from '../../services/entryService';
 import { formatDate, formatTime } from '../../utils/timeUtils';
-import { mainMenu } from '../keyboards';
+import { getMainMenu } from '../keyboards';
 
 const composer = new Composer<MyContext>();
 
@@ -20,7 +20,7 @@ composer.hears('📋 Мои записи', async (ctx) => {
     
     if (entries.length === 0) {
       await ctx.reply('📝 У тебя пока нет записей. Начни с кнопки "📝 Добавить запись"', {
-        reply_markup: mainMenu
+        reply_markup: getMainMenu(true)
       });
       return;
     }
@@ -38,7 +38,7 @@ composer.hears('📋 Мои записи', async (ctx) => {
   } catch (error) {
     console.error('Error listing entries:', error);
     await ctx.reply('❌ Произошла ошибка при получении записей', {
-      reply_markup: mainMenu
+      reply_markup: getMainMenu(!!ctx.hasAccess)
     });
   }
 });
@@ -61,7 +61,7 @@ composer.callbackQuery(/^entry_(prev|next|close)$/, async (ctx) => {
     viewSessions.delete(userId);
     await ctx.deleteMessage();
     await ctx.reply('📋 Просмотр записей завершен', {
-      reply_markup: mainMenu
+      reply_markup: getMainMenu(!!ctx.hasAccess)
     });
     return;
   }

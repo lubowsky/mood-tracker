@@ -3,7 +3,7 @@ import { Composer, InlineKeyboard } from 'grammy';
 import { MyContext } from '../middlewares/userMiddleware';
 import { getCollection } from '../../models/database';
 import { User, UserCollection, UserSettings } from '../../models/User';
-import { mainMenu, deleteAccountKeyboard } from '../keyboards';
+import { getMainMenu } from '../keyboards';
 
 const composer = new Composer<MyContext>();
 
@@ -36,6 +36,8 @@ async function showMainSettings(ctx: MyContext) {
   const settings = user.settings;
   
   const timezoneName = RUSSIAN_TIMEZONES.find(([_, value]) => value === settings.timezone)?.[0] || settings.timezone;
+
+  const accessStatus = ctx.hasAccess ? "✅ Активен" : "❌ Истек (требуется подписка)";
   
   const text = `⏰ *Настройки уведомлений*
 
@@ -74,10 +76,33 @@ async function showMainSettings(ctx: MyContext) {
 
 composer.callbackQuery('finish_settings', async (ctx) => {
   await ctx.answerCallbackQuery();
-  await ctx.editMessageText('✅ Настройки сохранены! Теперь ты можешь начать отслеживать свое состояние.');
-  await ctx.reply('Главное меню:', { 
-    reply_markup: mainMenu 
-  });
+  
+  // Убираем инлайн-меню настроек
+  await ctx.editMessageText('✅ Настройки сохранены!');
+
+  if (ctx.hasAccess) {
+    // Сценарий А: Есть доступ (новый юзер в рамках 24ч или платник/админ)
+    await ctx.reply(
+      '🚀 Всё готово! Теперь ты можешь полноценно использовать бота для отслеживания своего состояния.',
+      { 
+        reply_markup: getMainMenu(!!ctx.hasAccess),
+        parse_mode: 'Markdown' 
+      }
+    );
+  } else {
+    // Сценарий Б: Доступа нет (старый юзер вернулся, триал уже был когда-то использован)
+    await ctx.reply(
+      '🤖 Твой пробный период уже завершен. Чтобы снова делать записи, тебе необходимо активировать подписку.',
+      { parse_mode: 'Markdown' }
+    );
+    
+    // Вызываем показ тарифов (предположим, кнопка Подписка ведет на этот экшен)
+    // Здесь можно либо отправить сообщение, либо просто выдать урезанное меню
+    await ctx.reply('Используй раздел **📊 Подписка** для активации доступа:', {
+      reply_markup: getMainMenu(!!ctx.hasAccess),
+      parse_mode: 'Markdown'
+    });
+  }
 });
 
 // Обработчики callback-запросов для inline-кнопок
@@ -260,9 +285,9 @@ composer.callbackQuery('finish_settings', async (ctx) => {
   await ctx.editMessageText('✅ Настройки сохранены! Теперь ты можешь начать отслеживать свое состояние.');
   
   // Показываем главное меню с REPLY клавиатурой
-  const { mainMenu } = await import('../keyboards');
+  const { getMainMenu } = await import('../keyboards');
   await ctx.reply('Главное меню:', { 
-    reply_markup: mainMenu 
+    reply_markup: getMainMenu(!!ctx.hasAccess) 
   });
 });
 

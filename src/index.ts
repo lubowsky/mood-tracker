@@ -18,12 +18,12 @@ console.log(`🌍 NODE_ENV: ${process.env.NODE_ENV}`);
 import start from './bot/commands/start';
 import mainMenu from './bot/commands/mainMenu';
 import addEntry from './bot/commands/addEntry';
-import getStats from './bot/commands/getStats';
+// import getStats from './bot/commands/getStats';
 import listEntries from './bot/commands/listEntries';
 import settings from './bot/commands/settings';
 import broadcast from './features/broadcast'
 
-import { connectToDatabase } from "./models/database"
+import { connectToDatabase, getCollection } from "./models/database"
 import { morningConversation } from "./services/morningConversation"
 import { daytimeConversation } from "./services/daytimeConversation"
 import { eveningConversation  } from "./services/eveningConversation"
@@ -34,18 +34,45 @@ import { initCron } from "./services/cronService"
 import launchConversation from './bot/commands/launchConversation'
 import { changeNameConversation } from "./conversations/changeHomeNameConversation";
 import { deleteAccountConversation } from "./conversations/deleteAccountConversation"
-// import { telegramSuccessPaymentHandler } from "./bot/commands/payments";
+import { startWebhookServer } from "./webhooks/server";
+import { telegramSuccessPaymentHandler } from "./bot/commands/menu/subscription";
+import { UserCollection } from "./models/User";
 
 async function main() {
   await connectToDatabase()
 
+  startWebhookServer()
+
   const bot = new Bot<MyContext>(process.env.BOT_TOKEN!)
 
+  // Блок обработки блокировки бота пользователем
+  bot.on("my_chat_member", async (ctx) => {
+    const status = ctx.myChatMember.new_chat_member.status;
+    const userId = ctx.myChatMember.from.id;
+    const usersCollection = await getCollection(UserCollection);
+
+    if (status === "kicked") {
+      // Пользователь заблокировал бота
+      await usersCollection.updateOne(
+        { telegramId: userId },
+        { $set: { status: 'blocked', "settings.notificationsEnabled": false } }
+      );
+      console.log(`🚫 User ${userId} blocked the bot.`);
+    } else if (status === "member") {
+      // Пользователь разблокировал бота
+      await usersCollection.updateOne(
+        { telegramId: userId },
+        { $set: { status: 'active' } }
+      );
+      console.log(`✅ User ${userId} unblocked the bot.`);
+    }
+  });
+
   bot.on('pre_checkout_query', (ctx) => {
-    ctx.answerPreCheckoutQuery(true)
+    ctx.answerPreCheckoutQuery(true).catch(() => console.error("Ошибка pre_checkout"));
   })
 
-  // bot.on(':successful_payment', telegramSuccessPaymentHandler)
+  bot.on(':successful_payment', telegramSuccessPaymentHandler)
 
   bot.use(session({ initial: () => ({}) }))
   bot.use(userMiddleware)
@@ -66,7 +93,7 @@ async function main() {
   bot.use(mainMenu);
   bot.use(settings);
   bot.use(addEntry);
-  bot.use(getStats);
+  // bot.use(getStats);
   bot.use(listEntries);
   bot.use(broadcast);
 

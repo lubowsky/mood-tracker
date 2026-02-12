@@ -389,10 +389,23 @@ composer.callbackQuery("custom_emotions", async (ctx) => {
 })
 
 composer.on("message:text", async (ctx, next) => {
-  const session = sessions.get(ctx.from!.id)
-  if (!session || !ctx.session.isAddingEntry) return next()
+  const text = ctx.message.text;
 
-  const text = ctx.message.text
+  // Список всех кнопок главного меню
+  const mainButtons = [
+    '📝 Добавить запись', '📋 Последние записи', '📊 Подписка', 
+    '⏰ Настройки', 'ℹ️ Помощь', '📚 Справочник эмоций', '💾 Экспорт записей'
+  ];
+
+  // Если нажата любая кнопка меню - сбрасываем всё и уходим
+  if (mainButtons.includes(text)) {
+    sessions.delete(ctx.from!.id);
+    ctx.session.isAddingEntry = false;
+    return next(); // Это позволит mainMenu поймать кнопку
+  }
+
+  const session = sessions.get(ctx.from!.id);
+  if (!session || !ctx.session.isAddingEntry) return next();
 
   switch (session.step) {
     case "physical_symptoms":
