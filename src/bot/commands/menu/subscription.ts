@@ -221,23 +221,25 @@ export const telegramSuccessPaymentHandler = async (ctx: MyContext) => {
   )
 
   // 2️⃣ Создаём НОВУЮ платную подписку
-await subCollection.updateOne(
-  { telegramId: ctx.from.id },
-  {
-    $set: {
-      plan: tariffKey,
-      kind: "paid",
-      isActive: true,
-      startDate: now,
-      endDate,
-      warned3days: false,
-      warned1day: false,
-      expiredNotified: false,
-      updatedAt: now,
+  await subCollection.updateOne(
+    { telegramId: ctx.from.id },
+    {
+      $set: {
+        plan: tariffKey,
+        kind: "paid",
+        isActive: true,
+        startDate: now,
+        endDate,
+        warned3days: false,
+        warned1day: false,
+        expiredNotified: false,
+        updatedAt: now,
+      },
     },
-  },
-  { upsert: true }
-)
+    { upsert: true }
+  )
+
+  ctx.hasAccess = true
 
   await ctx.reply(
     `✨ *Подписка активирована!*\n\n` +
@@ -251,4 +253,3 @@ await subCollection.updateOne(
 }
 
 export default composer
-

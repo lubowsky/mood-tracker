@@ -142,83 +142,90 @@ export function initCron(bot: Bot<MyContext>) {
       /* ==================================================
        * 1️⃣ ПОДПИСКА
        * ================================================== */
-      const sub = await subsCollection.findOne(
-        {
-          telegramId: user.telegramId,
-          isActive: true,
-        },
-        {
-          sort: { endDate: -1 },
-        }
-      )
+      const isAdmin = user.role === "admin"
 
-      if (!sub) {
-        // такого состояния быть не должно
-        continue
-      }
+      let sub: any | null = null
 
-      // ❌ подписка истекла
-      if (sub.endDate <= now) {
-        await subsCollection.updateOne(
-          { _id: sub._id },
-          { $set: { isActive: false, updatedAt: now } }
+      if (!isAdmin) {
+        const sub = await subsCollection.findOne(
+          {
+            telegramId: user.telegramId,
+            isActive: true,
+          },
+          {
+            sort: { endDate: -1 },
+          }
         )
 
-        if (sub.plan === "trial" && !user.isTrialExhausted) {
-          await usersCollection.updateOne(
-            { _id: user._id },
-            { $set: { isTrialExhausted: true } }
-          )
+        if (!sub) {
+          continue
         }
 
-        if (!sub.expiredNotified) {
-          await notifySubscriptionEnded(bot, user, sub.plan === "trial")
-
+        // ❌ подписка истекла
+        if (sub.endDate <= now) {
           await subsCollection.updateOne(
             { _id: sub._id },
-            {
-              $set: {
-                expiredNotified: true,
-                updatedAt: now,
-              },
-            }
+            { $set: { isActive: false, updatedAt: now } }
           )
-        }
 
-        continue // НЕТ ДОСТУПА НЕ ШЛЁМ ОПРОСЫ
+          if (sub.plan === "trial" && !user.isTrialExhausted) {
+            await usersCollection.updateOne(
+              { _id: user._id },
+              { $set: { isTrialExhausted: true } }
+            )
+          }
+
+          if (!sub.expiredNotified) {
+            await notifySubscriptionEnded(bot, user, sub.plan === "trial")
+
+            await subsCollection.updateOne(
+              { _id: sub._id },
+              {
+                $set: {
+                  expiredNotified: true,
+                  updatedAt: now,
+                },
+              }
+            )
+          }
+
+          continue
+        }
       }
 
       /* ==================================================
       * УВЕДОМЛЕНИЯ О СРОКЕ ПОДПИСКИ
       * ================================================== */
-      const timeLeft = sub.endDate.getTime() - now.getTime()
+      if (!isAdmin  && sub) {
+        const timeLeft = sub.endDate.getTime() - now.getTime()
 
-      /*  За 3 суток */
-      if (
-        timeLeft <= 3 * DAY &&
-        timeLeft > 2 * DAY &&
-        !sub.warned3days
-      ) {
-        await notify3Days(bot, user)
+        /*  За 3 суток */
+        if (
+          timeLeft <= 3 * DAY &&
+          timeLeft > 2 * DAY &&
+          !sub.warned3days
+        ) {
+          await notify3Days(bot, user)
 
-        await subsCollection.updateOne(
-          { _id: sub._id },
-          { $set: { warned3days: true, updatedAt: now } }
-        )
-      }
+          await subsCollection.updateOne(
+            { _id: sub._id },
+            { $set: { warned3days: true, updatedAt: now } }
+          )
+        }
 
-      /* За 1 сутки */
-      if (
-        timeLeft <= 1 * DAY &&
-        timeLeft > 0 &&
-        !sub.warned1day
-      ) {
-        await notify1Day(bot, user)
+        /* За 1 сутки */
+        if (
+          timeLeft <= 1 * DAY &&
+          timeLeft > 0 &&
+          !sub.warned1day
+        ) {
+          await notify1Day(bot, user)
 
-        await subsCollection.updateOne(
-          { _id: sub._id },
-          { $set: { warned1day: true, updatedAt: now } }
-        )
+          await subsCollection.updateOne(
+            { _id: sub._id },
+            { $set: { warned1day: true, updatedAt: now } }
+          )
+        }
       }
 
 
