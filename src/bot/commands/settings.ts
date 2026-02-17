@@ -4,6 +4,7 @@ import { MyContext } from '../middlewares/userMiddleware';
 import { getCollection } from '../../models/database';
 import { User, UserCollection, UserSettings } from '../../models/User';
 import { getMainMenu } from '../keyboards';
+import { calculateUserAccess } from '../../utils/accessService';
 
 const composer = new Composer<MyContext>();
 
@@ -76,16 +77,18 @@ async function showMainSettings(ctx: MyContext) {
 
 composer.callbackQuery('finish_settings', async (ctx) => {
   await ctx.answerCallbackQuery();
+
+  const hasAccess = calculateUserAccess(ctx.from!.id)
   
   // Убираем инлайн-меню настроек
   await ctx.editMessageText('✅ Настройки сохранены!');
 
-  if (ctx.hasAccess) {
+  if (hasAccess) {
     // Сценарий А: Есть доступ (новый юзер в рамках 24ч или платник/админ)
     await ctx.reply(
       '🚀 Всё готово! Теперь ты можешь полноценно использовать бота для отслеживания своего состояния.',
       { 
-        reply_markup: getMainMenu(!!ctx.hasAccess),
+        reply_markup: getMainMenu(!!hasAccess),
         parse_mode: 'Markdown' 
       }
     );
@@ -99,7 +102,7 @@ composer.callbackQuery('finish_settings', async (ctx) => {
     // Вызываем показ тарифов (предположим, кнопка Подписка ведет на этот экшен)
     // Здесь можно либо отправить сообщение, либо просто выдать урезанное меню
     await ctx.reply('Используй раздел **📊 Подписка** для активации доступа:', {
-      reply_markup: getMainMenu(!!ctx.hasAccess),
+      reply_markup: getMainMenu(!!hasAccess),
       parse_mode: 'Markdown'
     });
   }
@@ -282,12 +285,13 @@ async function updateUserSettings(ctx: MyContext, updates: Partial<UserSettings>
 
 composer.callbackQuery('finish_settings', async (ctx) => {
   await ctx.answerCallbackQuery();
+  const hasAccess = calculateUserAccess(ctx.from!.id)
   await ctx.editMessageText('✅ Настройки сохранены! Теперь ты можешь начать отслеживать свое состояние.');
   
   // Показываем главное меню с REPLY клавиатурой
   const { getMainMenu } = await import('../keyboards');
   await ctx.reply('Главное меню:', { 
-    reply_markup: getMainMenu(!!ctx.hasAccess) 
+    reply_markup: getMainMenu(!!hasAccess) 
   });
 });
 

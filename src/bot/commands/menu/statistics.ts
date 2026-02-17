@@ -2,6 +2,7 @@ import { Composer } from 'grammy';
 import { MyContext } from '../../middlewares/userMiddleware';
 import { AnalyticsService } from '../../../services/analyticsService';
 import { getMainMenu } from '../../keyboards';
+import { calculateUserAccess } from '../../../utils/accessService';
 
 const composer = new Composer<MyContext>();
 
@@ -21,15 +22,16 @@ composer.hears('📈 За 7 дней', async (ctx) => generateStats(ctx, 7));
 composer.hears('📊 За 30 дней', async (ctx) => generateStats(ctx, 30));
 
 composer.hears('🔍 Корреляции', async (ctx) => {
+  const hasAccess = calculateUserAccess(ctx.from!.id)
     try {
         const correlations = await AnalyticsService.getCorrelations(ctx.user!._id!);
         if (correlations.length === 0) {
-            return ctx.reply('Пока недостаточно данных для анализа корреляций.', { reply_markup: getMainMenu(!!ctx.hasAccess) });
+            return ctx.reply('Пока недостаточно данных для анализа корреляций.', { reply_markup: getMainMenu(!!hasAccess) });
         }
         let response = `🔍 *Возможные корреляции:*\n\n${correlations.map((c, i) => `${i + 1}. ${c}`).join('\n\n')}`;
-        await ctx.reply(response, { parse_mode: 'Markdown', reply_markup: getMainMenu(!!ctx.hasAccess) });
+        await ctx.reply(response, { parse_mode: 'Markdown', reply_markup: getMainMenu(!!hasAccess) });
     } catch (error) {
-        await ctx.reply('Ошибка при анализе данных', { reply_markup: getMainMenu(!!ctx.hasAccess) });
+        await ctx.reply('Ошибка при анализе данных', { reply_markup: getMainMenu(!!hasAccess) });
     }
 });
 

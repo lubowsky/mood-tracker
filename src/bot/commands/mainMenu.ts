@@ -9,6 +9,7 @@ import historyModule from './menu/history';
 import dictionaryModule from './menu/dictionary';
 
 import { generateTextContent, generateJSONContent } from '../../utils/exportUtils'
+import { calculateUserAccess } from '../../utils/accessService';
 
 const composer = new Composer<MyContext>();
 
@@ -77,11 +78,12 @@ composer.hears('ℹ️ Помощь', async (ctx) => {
 // Обработчики экспорта
 composer.callbackQuery(/^export_(text|json|back)$/, async (ctx) => {
   const action = ctx.match![1];
+  const hasAccess = calculateUserAccess(ctx.from!.id)
   
   if (action === 'back') {
     await ctx.answerCallbackQuery();
     await ctx.deleteMessage();
-    await ctx.reply('Главное меню:', { reply_markup: getMainMenu(!!ctx.hasAccess) });
+    await ctx.reply('Главное меню:', { reply_markup: getMainMenu(!!hasAccess) });
     return;
   }
   
@@ -131,8 +133,9 @@ composer.callbackQuery(/^export_(text|json|back)$/, async (ctx) => {
 
 // Обработчик кнопки "Назад"
 composer.hears('↩️ Назад', async (ctx) => {
+  const hasAccess = calculateUserAccess(ctx.from!.id)
   await ctx.reply('Главное меню:', { 
-    reply_markup: getMainMenu(!!ctx.hasAccess)
+    reply_markup: getMainMenu(!!hasAccess)
   });
 });
 

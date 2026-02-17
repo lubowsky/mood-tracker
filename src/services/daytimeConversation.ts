@@ -5,6 +5,7 @@ import { getCollection } from "../models/database"
 import { UserCollection } from "../models/User"
 import moment from "moment-timezone"
 import { getMainMenu } from '../bot/keyboards';
+import { calculateUserAccess } from "../utils/accessService"
 
 const gentlePhrases = [
   "💫 Привет! Как твое состояние в этот момент?",
@@ -27,6 +28,7 @@ export async function daytimeConversation(
   const userId = ctx.from!.id
   const users = getCollection(UserCollection)
   const user = await users.findOne({ telegramId: userId })
+  const hasAccess = calculateUserAccess(ctx.from!.id)
 
   const phrase = random(gentlePhrases)
 
@@ -57,7 +59,8 @@ export async function daytimeConversation(
   const data = action.callbackQuery.data
 
   if (data === "go_main") {
-    await ctx.reply("🏠 Главное меню:", { reply_markup: getMainMenu(!!ctx.hasAccess) })
+    console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!', ctx.hasAccess)
+    await ctx.reply("🏠 Главное меню:", { reply_markup: getMainMenu(!!hasAccess) })
     return
   }
 
@@ -86,7 +89,7 @@ export async function daytimeConversation(
     await action.editMessageText(replyText)
     await saveQuickResponse(userId, type === "daytime_ok" ? "positive" : "neutral")
 
-    await ctx.reply("🏠 Главное меню:", { reply_markup: getMainMenu(!!ctx.hasAccess) })
+    await ctx.reply("🏠 Главное меню:", { reply_markup: getMainMenu(!!hasAccess) })
 
     return
   }
@@ -112,7 +115,9 @@ export async function daytimeConversation(
     const choice = next.callbackQuery.data
 
     if (choice === "go_main") {
-      await ctx.reply("🏠 Главное меню:", { reply_markup: getMainMenu(!!ctx.hasAccess) })
+      console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!', ctx.hasAccess)
+      // await ctx.reply("🏠 Главное меню:", { reply_markup: getMainMenu(true) })
+      await ctx.reply("🏠 Главное меню:", { reply_markup: getMainMenu(!!hasAccess) })
       return
     }
 
@@ -143,13 +148,13 @@ export async function daytimeConversation(
       await final.answerCallbackQuery()
 
       if (final.callbackQuery.data === "go_main") {
-        await ctx.reply("🏠 Главное меню:", { reply_markup: getMainMenu(!!ctx.hasAccess) })
+        await ctx.reply("🏠 Главное меню:", { reply_markup: getMainMenu(!!hasAccess) })
         return
       }
 
       await handleHardFinal(final, ctx)
 
-      await ctx.reply("🏠 Главное меню:", { reply_markup: getMainMenu(!!ctx.hasAccess) })
+      await ctx.reply("🏠 Главное меню:", { reply_markup: getMainMenu(!!hasAccess) })
 
       return
     }
@@ -174,7 +179,7 @@ export async function daytimeConversation(
       await final.answerCallbackQuery()
       await handleHardFinal(final, ctx)
 
-      await ctx.reply("🏠 Главное меню:", { reply_markup: getMainMenu(!!ctx.hasAccess) })
+      await ctx.reply("🏠 Главное меню:", { reply_markup: getMainMenu(!!hasAccess) })
 
       return
     }
@@ -226,7 +231,7 @@ export async function daytimeConversation(
     await saveDetailedDescription(userId, text)
     await msg.reply(`💫 Спасибо, что поделился(поделилась) 🌸 Твои мысли сохранены.`)
     
-    await ctx.reply("🏠 Главное меню:", { reply_markup: getMainMenu(!!ctx.hasAccess) })
+    await ctx.reply("🏠 Главное меню:", { reply_markup: getMainMenu(!!hasAccess) })
 
     return
   }
@@ -244,14 +249,14 @@ export async function daytimeConversation(
       `Хорошо, я не буду беспокоить тебя до завтра 🌙\n\n` +
       `Если захочешь записать что-то — используй кнопку "📝 Добавить запись"`
     )
-    await ctx.reply("🏠 Главное меню:", { reply_markup: getMainMenu(!!ctx.hasAccess) })
+    await ctx.reply("🏠 Главное меню:", { reply_markup: getMainMenu(!!hasAccess) })
 
     return
   }
 
   await action.editMessageText("Спасибо! Если захочешь — используй «📝 Добавить запись»")
 
-  await ctx.reply("🏠 Главное меню:", { reply_markup: getMainMenu(!!ctx.hasAccess) })
+  await ctx.reply("🏠 Главное меню:", { reply_markup: getMainMenu(!!hasAccess) })
 }
 
 async function saveQuickResponse(userTelegramId: number, moodType: "positive" | "neutral" | "negative") {

@@ -4,6 +4,7 @@ import { getCollection } from "../models/database"
 import { UserCollection, type User } from "../models/User"
 import { MoodEntryCollection } from "../models/MoodEntry"
 import { getMainMenu } from "../bot/keyboards"
+import { calculateUserAccess } from "../utils/accessService"
 
 type EveningQuickKey =
   | "evening_q_excellent"
@@ -100,10 +101,12 @@ export async function eveningConversation(
       createdAt: new Date()
     })
 
+    const hasAccess = calculateUserAccess(ctx.from!.id)
+
     await ctx.reply(
       `Спасибо, что поделился 🌿  
         Береги себя и хорошего тебе вечера.`, {
-          reply_markup: getMainMenu(!!ctx.hasAccess)
+          reply_markup: getMainMenu(!!hasAccess)
         }
     )
 

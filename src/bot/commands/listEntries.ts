@@ -3,6 +3,7 @@ import { MyContext } from '../middlewares/userMiddleware';
 import { EntryService } from '../../services/entryService';
 import { formatDate, formatTime } from '../../utils/timeUtils';
 import { getMainMenu } from '../keyboards';
+import { calculateUserAccess } from '../../utils/accessService';
 
 const composer = new Composer<MyContext>();
 
@@ -14,13 +15,14 @@ const viewSessions = new Map<number, {
 }>();
 
 composer.hears('📋 Мои записи', async (ctx) => {
+  const hasAccess = calculateUserAccess(ctx.from!.id)
   try {
     // Получаем все записи (или больше, например 50 последних)
     const entries = await EntryService.getUserEntries(ctx.user!._id!, 50);
     
     if (entries.length === 0) {
       await ctx.reply('📝 У тебя пока нет записей. Начни с кнопки "📝 Добавить запись"', {
-        reply_markup: getMainMenu(true)
+        reply_markup: getMainMenu(!!hasAccess)
       });
       return;
     }
@@ -38,7 +40,7 @@ composer.hears('📋 Мои записи', async (ctx) => {
   } catch (error) {
     console.error('Error listing entries:', error);
     await ctx.reply('❌ Произошла ошибка при получении записей', {
-      reply_markup: getMainMenu(!!ctx.hasAccess)
+      reply_markup: getMainMenu(!!hasAccess)
     });
   }
 });
@@ -48,6 +50,7 @@ composer.callbackQuery(/^entry_(prev|next|close)$/, async (ctx) => {
   const userId = ctx.from!.id;
   const session = viewSessions.get(userId);
   const action = ctx.match![1];
+  const hasAccess = calculateUserAccess(ctx.from!.id)
   
   if (!session) {
     await ctx.answerCallbackQuery('Сессия просмотра завершена');
@@ -61,7 +64,7 @@ composer.callbackQuery(/^entry_(prev|next|close)$/, async (ctx) => {
     viewSessions.delete(userId);
     await ctx.deleteMessage();
     await ctx.reply('📋 Просмотр записей завершен', {
-      reply_markup: getMainMenu(!!ctx.hasAccess)
+      reply_markup: getMainMenu(!!hasAccess)
     });
     return;
   }

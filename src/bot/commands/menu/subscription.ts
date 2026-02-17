@@ -8,6 +8,7 @@ import { TariffKey, TARIFFS } from "../../../models/tariffs"
 import { getMainMenu } from "../../keyboards"
 import { calculateEndDate } from "../../../utils/subscriptionUtils"
 import { PaymentCollection } from "../../../models/Payments"
+import { calculateUserAccess } from "../../../utils/accessService"
 
 const composer = new Composer<MyContext>()
 
@@ -76,6 +77,7 @@ composer.hears("📊 Подписка", async (ctx) => {
 /* -------------------------------------------------- */
 composer.callbackQuery("activate_trial", async (ctx) => {
   await ctx.answerCallbackQuery()
+  const hasAccess = calculateUserAccess(ctx.from!.id)
 
   if (ctx.user?.isTrialExhausted) {
     return ctx.reply("⛔️ Пробный период уже был использован.")
@@ -105,7 +107,7 @@ composer.callbackQuery("activate_trial", async (ctx) => {
       `${endDate.toLocaleTimeString("ru-RU")}*`,
     {
       parse_mode: "Markdown",
-      reply_markup: getMainMenu(!!ctx.hasAccess),
+      reply_markup: getMainMenu(!!hasAccess),
     }
   )
 })

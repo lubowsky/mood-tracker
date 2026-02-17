@@ -6,6 +6,7 @@ import { MoodEntryCollection } from "../models/MoodEntry"
 import { UserCollection } from "../models/User"
 import { finishConversation, goMainButton } from "../utils/conversationUtils"
 import { getMainMenu } from "../bot/keyboards"
+import { calculateUserAccess } from "../utils/accessService"
 
 function createSleepHoursKeyboard() {
   return {
@@ -184,12 +185,12 @@ export async function morningConversation(
 
   const phrase = phrases[Math.floor(Math.random() * phrases.length)]
 
-  console.log('перед ответом бота на утреннее взаимодействие', ctx.hasAccess)
+  const hasAccess = await calculateUserAccess(telegramId)
 
   await ctx.reply(
     `${phrase}\n\n` +
     `В любой момент ты можешь добавить запись о своём состоянии.`, {
-      reply_markup: getMainMenu(!!ctx.hasAccess)
+      reply_markup: getMainMenu(hasAccess)
     }
   )
 
