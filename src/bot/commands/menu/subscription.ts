@@ -162,25 +162,30 @@ composer.callbackQuery(/^buy_tariff_(.+)$/, async (ctx) => {
   await ctx.deleteMessage()
   
   console.log('Начало оплаты тарифа: ', tariff)
-  await ctx.replyWithInvoice(
-    tariff.title,
-    `Подписка на ${tariff.durationDays} дней`,
-    tariffKey,
-    "RUB",
-    [
+  try {
+    await ctx.replyWithInvoice(
+      tariff.title,
+      `Подписка на ${tariff.durationDays} дней`,
+      tariffKey,
+      "RUB",
+      [
+        {
+          label: tariff.title,
+          amount: Math.round(Number(tariff.price) * 100),
+        },
+      ],
       {
-        label: tariff.title,
-        amount: Math.round(Number(tariff.price) * 100),
-      },
-    ],
-    {
-      provider_token: process.env.TELEGRAM_PROVIDER_TOKEN!,
-      need_email: true,
-      send_email_to_provider: true,
-    }
-  )
-})
-console.log("INVOICE SENT", process.env.TELEGRAM_PROVIDER_TOKEN!)
+        provider_token: process.env.TELEGRAM_PROVIDER_TOKEN!,
+        need_email: true,
+        send_email_to_provider: true,
+      }
+    )
+
+    console.log("INVOICE SENT OK")
+  } catch (e) {
+    console.error("INVOICE ERROR:", e)
+  }
+  console.log("INVOICE SENT", process.env.TELEGRAM_PROVIDER_TOKEN!)
 
 /* -------------------------------------------------- */
 /* ✅ УСПЕШНАЯ ОПЛАТА */
