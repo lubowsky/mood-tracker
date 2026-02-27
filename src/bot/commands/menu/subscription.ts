@@ -162,6 +162,7 @@ composer.callbackQuery(/^buy_tariff_(.+)$/, async (ctx) => {
   await ctx.deleteMessage()
   
   console.log('Начало оплаты тарифа: ', tariff)
+  console.log("INVOICE SENT", process.env.TELEGRAM_PROVIDER_TOKEN!)
   try {
     await ctx.replyWithInvoice(
       tariff.title,
@@ -186,7 +187,6 @@ composer.callbackQuery(/^buy_tariff_(.+)$/, async (ctx) => {
     console.error("INVOICE ERROR:", e)
   }
 })
-console.log("INVOICE SENT", process.env.TELEGRAM_PROVIDER_TOKEN!)
 
 /* -------------------------------------------------- */
 /* ✅ УСПЕШНАЯ ОПЛАТА */
