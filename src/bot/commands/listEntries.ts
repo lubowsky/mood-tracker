@@ -15,7 +15,7 @@ const viewSessions = new Map<number, {
 }>();
 
 composer.hears('📋 Мои записи', async (ctx) => {
-  const hasAccess = calculateUserAccess(ctx.from!.id)
+  const hasAccess = await calculateUserAccess(ctx.from!.id)
   try {
     // Получаем все записи (или больше, например 50 последних)
     const entries = await EntryService.getUserEntries(ctx.user!._id!, 50);
@@ -50,7 +50,7 @@ composer.callbackQuery(/^entry_(prev|next|close)$/, async (ctx) => {
   const userId = ctx.from!.id;
   const session = viewSessions.get(userId);
   const action = ctx.match![1];
-  const hasAccess = calculateUserAccess(ctx.from!.id)
+  const hasAccess = await calculateUserAccess(ctx.from!.id)
   
   if (!session) {
     await ctx.answerCallbackQuery('Сессия просмотра завершена');

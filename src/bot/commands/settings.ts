@@ -78,7 +78,7 @@ async function showMainSettings(ctx: MyContext) {
 composer.callbackQuery('finish_settings', async (ctx) => {
   await ctx.answerCallbackQuery();
 
-  const hasAccess = calculateUserAccess(ctx.from!.id)
+  const hasAccess = await calculateUserAccess(ctx.from!.id)
   
   // Убираем инлайн-меню настроек
   await ctx.editMessageText('✅ Настройки сохранены!');
@@ -285,7 +285,7 @@ async function updateUserSettings(ctx: MyContext, updates: Partial<UserSettings>
 
 composer.callbackQuery('finish_settings', async (ctx) => {
   await ctx.answerCallbackQuery();
-  const hasAccess = calculateUserAccess(ctx.from!.id)
+  const hasAccess = await calculateUserAccess(ctx.from!.id)
   await ctx.editMessageText('✅ Настройки сохранены! Теперь ты можешь начать отслеживать свое состояние.');
   
   // Показываем главное меню с REPLY клавиатурой

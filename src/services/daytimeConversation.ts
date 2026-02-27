@@ -28,7 +28,7 @@ export async function daytimeConversation(
   const userId = ctx.from!.id
   const users = getCollection(UserCollection)
   const user = await users.findOne({ telegramId: userId })
-  const hasAccess = calculateUserAccess(ctx.from!.id)
+  const hasAccess = await calculateUserAccess(ctx.from!.id)
 
   const phrase = random(gentlePhrases)
 

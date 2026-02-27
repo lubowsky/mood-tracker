@@ -16,9 +16,14 @@ const composer = new Composer<MyContext>()
 /* 📊 МЕНЮ ПОДПИСКИ */
 /* -------------------------------------------------- */
 composer.hears("📊 Подписка", async (ctx) => {
+  console.log("=== SUBSCRIPTION MENU ===")
+  console.log("User:", ctx.from?.id)
+  console.log("User role:", ctx.user?.role)
+
   ctx.session.isAddingEntry = false
 
   if (ctx.user?.role === "admin" || ctx.user?.role === "tester") {
+    console.log("Access granted by role")
     return ctx.reply(
       `🌟 *Доступ разрешён*\nСтатус: ${ctx.user.role}.`,
       { parse_mode: "Markdown" }
@@ -27,14 +32,17 @@ composer.hears("📊 Подписка", async (ctx) => {
 
   const subCollection = await getCollection(UserSubscriptionCollection)
   const now = new Date()
+  console.log("NOW:", now)
 
   const subscription = await subCollection.findOne({
     telegramId: ctx.from!.id,
     isActive: true,
   })
+  console.log("Subscription from DB:", subscription)
 
   /* ✅ АКТИВНАЯ ПОДПИСКА */
   if (subscription && subscription.endDate > now) {
+    console.log("Active subscription detected")
     return ctx.reply(
       `✅ *Подписка активна*\n\n` +
         `Тип: *${subscription.plan === "trial" ? "Ознакомительная" : "Платная"}*\n` +
@@ -59,6 +67,8 @@ composer.hears("📊 Подписка", async (ctx) => {
     )
   }
 
+  console.log("Trial exhausted, showing tariffs")
+
   /* ❌ ПОДПИСКИ НЕТ */
   return ctx.reply(
     `❌ *У вас нет активной подписки*\n\nВыберите тарифный план:`,
@@ -77,7 +87,7 @@ composer.hears("📊 Подписка", async (ctx) => {
 /* -------------------------------------------------- */
 composer.callbackQuery("activate_trial", async (ctx) => {
   await ctx.answerCallbackQuery()
-  const hasAccess = calculateUserAccess(ctx.from!.id)
+  const hasAccess = await calculateUserAccess(ctx.from!.id)
 
   if (ctx.user?.isTrialExhausted) {
     return ctx.reply("⛔️ Пробный период уже был использован.")
@@ -174,6 +184,7 @@ composer.callbackQuery(/^buy_tariff_(.+)$/, async (ctx) => {
 /* ✅ УСПЕШНАЯ ОПЛАТА */
 /* -------------------------------------------------- */
 export const telegramSuccessPaymentHandler = async (ctx: MyContext) => {
+  console.log('telegramSuccessPaymentHandler start')
   const payment = ctx.message?.successful_payment
   if (!payment || !ctx.from) return
 

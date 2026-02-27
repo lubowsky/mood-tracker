@@ -5,7 +5,7 @@ import { MyContext } from "../bot/middlewares/userMiddleware";
 import { calculateUserAccess } from "./accessService";
 
 export async function finishConversation(ctx: MyContext) {
-  const hasAccess = calculateUserAccess(ctx.from!.id)
+  const hasAccess = await calculateUserAccess(ctx.from!.id)
   await ctx.reply("🏠 Главное меню:", {
     reply_markup: getMainMenu(!!hasAccess)
   })

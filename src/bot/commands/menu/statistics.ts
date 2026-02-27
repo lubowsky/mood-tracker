@@ -22,7 +22,7 @@ composer.hears('📈 За 7 дней', async (ctx) => generateStats(ctx, 7));
 composer.hears('📊 За 30 дней', async (ctx) => generateStats(ctx, 30));
 
 composer.hears('🔍 Корреляции', async (ctx) => {
-  const hasAccess = calculateUserAccess(ctx.from!.id)
+  const hasAccess = await calculateUserAccess(ctx.from!.id)
     try {
         const correlations = await AnalyticsService.getCorrelations(ctx.user!._id!);
         if (correlations.length === 0) {

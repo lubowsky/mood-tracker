@@ -101,7 +101,7 @@ export async function eveningConversation(
       createdAt: new Date()
     })
 
-    const hasAccess = calculateUserAccess(ctx.from!.id)
+    const hasAccess = await calculateUserAccess(ctx.from!.id)
 
     await ctx.reply(
       `Спасибо, что поделился 🌿  
