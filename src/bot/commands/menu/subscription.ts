@@ -180,7 +180,7 @@ composer.callbackQuery(/^buy_tariff_(.+)$/, async (ctx) => {
     }
   )
 })
-console.log("INVOICE SENT")
+console.log("INVOICE SENT", process.env.TELEGRAM_PROVIDER_TOKEN!)
 
 /* -------------------------------------------------- */
 /* ✅ УСПЕШНАЯ ОПЛАТА */
