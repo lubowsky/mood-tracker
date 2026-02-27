@@ -69,7 +69,9 @@ async function main() {
   });
 
   bot.on('pre_checkout_query', (ctx) => {
-    ctx.answerPreCheckoutQuery(true).catch(() => console.error("Ошибка pre_checkout"));
+    console.log("PRE CHECKOUT RECEIVED")
+    ctx.answerPreCheckoutQuery(true)
+      .catch(() => console.error("Ошибка pre_checkout"));
   })
 
   bot.on(':successful_payment', telegramSuccessPaymentHandler)
