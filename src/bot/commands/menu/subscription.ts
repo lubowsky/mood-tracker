@@ -174,12 +174,13 @@ composer.callbackQuery(/^buy_tariff_(.+)$/, async (ctx) => {
       },
     ],
     {
-      provider_token: process.env.YOOKASSA_SECRET_KEY!,
+      provider_token: process.env.TELEGRAM_PROVIDER_TOKEN!,
       need_email: true,
       send_email_to_provider: true,
     }
   )
 })
+console.log("INVOICE SENT")
 
 /* -------------------------------------------------- */
 /* ✅ УСПЕШНАЯ ОПЛАТА */
