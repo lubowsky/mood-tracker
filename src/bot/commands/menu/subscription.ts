@@ -175,10 +175,23 @@ composer.callbackQuery(/^buy_tariff_(.+)$/, async (ctx) => {
           amount: Math.round(Number(tariff.price) * 100),
         },
       ],
+      // {
+      //   provider_token: process.env.TELEGRAM_PROVIDER_TOKEN!,
+      //   need_email: true,
+      //   send_email_to_provider: true,
+      // }
       {
         provider_token: process.env.TELEGRAM_PROVIDER_TOKEN!,
-        need_email: true,
-        send_email_to_provider: true,
+        provider_data: JSON.stringify({
+            receipt: {
+                items: [{
+                    description: tariff.title,
+                    quantity: "1.00",
+                    amount: { value: tariff.price, currency: "RUB" },
+                    vat_code: 1 // Укажите ваш код НДС
+                }]
+            }
+        })
       }
     )
 

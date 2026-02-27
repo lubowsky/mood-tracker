@@ -68,12 +68,15 @@ async function main() {
     }
   });
 
-  bot.on('pre_checkout_query', (ctx) => {
-    console.log("PRE CHECKOUT RECEIVED")
-    console.log(ctx.update.pre_checkout_query)
-    ctx.answerPreCheckoutQuery(true)
-      .catch(() => console.error("Ошибка pre_checkout"));
-  })
+  bot.on('pre_checkout_query', async (ctx) => {
+    console.log("=== PRE_CHECKOUT_QUERY RECEIVED ===");
+    try {
+      await ctx.answerPreCheckoutQuery(true);
+      console.log("=== PRE_CHECKOUT ANSWERED OK ===");
+    } catch (err) {
+      console.error("=== PRE_CHECKOUT ERROR ===", err);
+    }
+  });
 
   bot.on(':successful_payment', telegramSuccessPaymentHandler)
 
