@@ -160,7 +160,8 @@ composer.callbackQuery(/^buy_tariff_(.+)$/, async (ctx) => {
 
   await ctx.answerCallbackQuery()
   await ctx.deleteMessage()
-
+  
+  console.log('Начало оплаты тарифа: ', tariff)
   await ctx.replyWithInvoice(
     tariff.title,
     `Подписка на ${tariff.durationDays} дней`,

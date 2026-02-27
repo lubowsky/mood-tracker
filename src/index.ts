@@ -70,6 +70,7 @@ async function main() {
 
   bot.on('pre_checkout_query', (ctx) => {
     console.log("PRE CHECKOUT RECEIVED")
+    console.log(ctx.update.pre_checkout_query)
     ctx.answerPreCheckoutQuery(true)
       .catch(() => console.error("Ошибка pre_checkout"));
   })
