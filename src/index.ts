@@ -41,7 +41,7 @@ import { UserCollection } from "./models/User";
 async function main() {
   await connectToDatabase()
 
-  startWebhookServer()
+  // startWebhookServer()
 
   const bot = new Bot<MyContext>(process.env.BOT_TOKEN!)
 
