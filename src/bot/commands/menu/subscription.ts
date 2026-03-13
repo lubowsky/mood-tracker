@@ -177,17 +177,17 @@ composer.callbackQuery(/^buy_tariff_(.+)$/, async (ctx) => {
       ],
       {
         provider_token: process.env.TELEGRAM_PROVIDER_TOKEN!,
-        need_email: true,
-        provider_data: JSON.stringify({
-            receipt: {
-                items: [{
-                    description: tariff.title,
-                    quantity: "1.00",
-                    amount: { value: Number(tariff.price).toFixed(2), currency: "RUB" },
-                    vat_code: 0
-                }]
-            }
-        })
+        // need_email: true,
+        // provider_data: JSON.stringify({
+        //     receipt: {
+        //         items: [{
+        //             description: tariff.title,
+        //             quantity: "1.00",
+        //             amount: { value: Number(tariff.price).toFixed(2), currency: "RUB" },
+        //             vat_code: 1
+        //         }]
+        //     }
+        // })
       }
     )
 
