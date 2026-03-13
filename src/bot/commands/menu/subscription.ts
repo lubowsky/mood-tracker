@@ -172,7 +172,7 @@ composer.callbackQuery(/^buy_tariff_(.+)$/, async (ctx) => {
       [
         {
           label: tariff.title,
-          amount: Math.round(Number(tariff.price) * 100),
+          amount: Math.round(parseFloat(tariff.price) * 100),
         },
       ],
       {
@@ -182,8 +182,8 @@ composer.callbackQuery(/^buy_tariff_(.+)$/, async (ctx) => {
             receipt: {
                 items: [{
                     description: tariff.title,
-                    quantity: 1,
-                    amount: { value: tariff.price, currency: "RUB" },
+                    quantity: "1.00",
+                    amount: { value: Number(tariff.price).toFixed(2), currency: "RUB" },
                     vat_code: 0
                 }]
             }
