@@ -178,7 +178,6 @@ composer.callbackQuery(/^buy_tariff_(.+)$/, async (ctx) => {
       {
         provider_token: process.env.TELEGRAM_PROVIDER_TOKEN!,
         need_email: true,
-        send_email_to_provider: true,
         provider_data: JSON.stringify({
             receipt: {
                 items: [{
